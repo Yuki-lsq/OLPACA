@@ -17,7 +17,7 @@ export default function Home() {
   };
 
   const handleGenerateOutput = () => {
-    setOutputText("generated llm output");
+    setOutputText("This should be the generated output");
   };
 
   return (
@@ -33,7 +33,7 @@ export default function Home() {
         daily activities, and metabolism to offer tailor-made clothing
         recommendations.
       </p>
-      <hr className="h-px my-8 bg-gray-300 border-0" />
+      <hr className="h-px my-8 bg-secondary border-0" />
       <div className="flex flex-row divide-x">
         <div className="flex flex-col px-8 w-[500px] gap-y-4">
           <div className="container flex flex-col mx-auto mb-4">
@@ -42,7 +42,7 @@ export default function Home() {
             </label>
             <textarea
               id="temperature"
-              className="border border-gray-300 rounded-lg p-2 h-12 resize-none"
+              className="border border-primary rounded-lg p-2 h-11 resize-none"
               value={inputTemp}
               onChange={handleTemperatureChange}
               placeholder="Enter temperature here..."
@@ -55,7 +55,7 @@ export default function Home() {
             </label>
             <textarea
               id="fit"
-              className="border border-gray-300 rounded-lg p-2 h-12 resize-none"
+              className="border border-primary rounded-lg p-2 h-11 resize-none"
               value={inputFit}
               onChange={handleFitChange}
               placeholder="Enter what you're wearing here..."
@@ -69,13 +69,13 @@ export default function Home() {
           </label>
           <textarea
             id="recommendations"
-            className="border border-gray-300 rounded-lg p-2 h-36 resize-none"
+            className="border border-primary rounded-lg p-2 h-36 resize-none"
             value={outputText}
             placeholder="Output will be generated here..."
             readOnly
           />
           <button
-            className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-gray-300 rounded"
+            className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
             onClick={handleGenerateOutput}
           >
             Generate Output
@@ -84,7 +84,7 @@ export default function Home() {
       </div>
       <div className="flex flex-row justify-center mt-8">
         <button
-          className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-gray-300 rounded"
+          className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
           onClick={getWeatherProps}
         >
           Get Weather Data
