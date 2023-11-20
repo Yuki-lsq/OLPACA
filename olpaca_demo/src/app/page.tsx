@@ -22,10 +22,16 @@ export default function Home() {
 
   return (
     <main>
-      <h1 className="mb-4 text-2xl font-extrabold md:text-3xl lg:text-4xl">
+      <h1 
+        className="animate-in mb-4 text-2xl font-extrabold md:text-3xl lg:text-4xl"
+        style={{ "--index": 1 } as React.CSSProperties}
+      >
         SmartWear Adviser: Your Personalised Weather Wardrobe Companion
       </h1>
-      <p className="text-md font-normal lg:text-lg">
+      <p
+        className="animate-in text-md font-normal lg:text-lg"
+        style={{ "--index": 2 } as React.CSSProperties}
+      >
         (placeholder) Stay ahead of the weather with SmartWear Adviser, the
         revolutionary generative AI app designed to make your daily clothing
         choices a breeze. This intelligent application goes beyond generic
@@ -34,7 +40,10 @@ export default function Home() {
         recommendations.
       </p>
       <hr className="h-px my-8 bg-secondary border-0" />
-      <div className="flex flex-row divide-x">
+      <div
+        className="animate-in flex flex-row divide-x"
+        style={{ "--index": 3 } as React.CSSProperties}
+      >
         <div className="flex flex-col px-8 w-[500px] gap-y-4">
           <div className="container flex flex-col mx-auto mb-4">
             <label htmlFor="temperature" className="text-lg font-semibold mb-2">
@@ -82,7 +91,10 @@ export default function Home() {
           </button>
         </div>
       </div>
-      <div className="flex flex-row justify-center mt-8">
+      <div
+        className="animate-in flex flex-row justify-center mt-8"
+        style={{ "--index": 4 } as React.CSSProperties}
+      >
         <button
           className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
           onClick={getWeatherProps}
