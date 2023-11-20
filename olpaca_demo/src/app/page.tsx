@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 
+import { getWeatherProps } from "./api/WeatherData";
+
 export default function Home() {
   const [inputTemp, setTemp] = useState("");
   const [inputFit, setFit] = useState("");
@@ -62,10 +64,11 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col px-8 w-[500px] container">
-          <label className="text-lg font-semibold mb-2">
+          <label htmlFor="recommendations" className="text-lg font-semibold mb-2">
             Clothing Recommendations
           </label>
           <textarea
+            id="recommendations"
             className="border border-gray-300 rounded-lg p-2 h-36 resize-none"
             value={outputText}
             placeholder="Output will be generated here..."
@@ -78,6 +81,14 @@ export default function Home() {
             Generate Output
           </button>
         </div>
+      </div>
+      <div className="flex flex-row justify-center mt-8">
+        <button
+          className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-gray-300 rounded"
+          onClick={getWeatherProps}
+        >
+          Get Weather Data
+        </button>
       </div>
     </main>
   );
