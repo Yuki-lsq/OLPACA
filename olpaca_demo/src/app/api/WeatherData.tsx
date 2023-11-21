@@ -1,13 +1,15 @@
+const API_KEY = process.env.WEATHER_API_KEY;
+
 export async function getWeatherProps() {
   const axios = require("axios");
   const options = {
     method: "GET",
     url: "https://weatherapi-com.p.rapidapi.com/current.json",
-    params: { q: '53.1,-0.13' },
+    params: { q: "53.1,-0.13" },
     headers: {
-      'X-RapidAPI-Key': 'ec30b4ec4amshcd74cf448cf3e13p10cfeajsndaa0e47b272b',
-      'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
-    }
+      "X-RapidAPI-Key": API_KEY ,
+      "X-RapidAPI-Host": "weatherapi-com.p.rapidapi.com",
+    },
   };
 
   try {
@@ -16,4 +18,5 @@ export async function getWeatherProps() {
   } catch (error) {
     console.error(error);
   }
-};
+}
+
