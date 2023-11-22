@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useChat } from "ai/react";
 
 import { getWeatherProps } from "./api/WeatherData";
 
@@ -8,7 +9,9 @@ export default function Home() {
   const [inputFit, setFit] = useState("");
   const [outputText, setOutputText] = useState("");
 
-  const handleTemperatureChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTemperatureChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
     setTemp(event.target.value);
   };
 
@@ -20,9 +23,11 @@ export default function Home() {
     setOutputText("This should be the generated output");
   };
 
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+
   return (
     <main>
-      <h1 
+      <h1
         className="animate-in mb-4 text-2xl font-extrabold md:text-3xl lg:text-4xl"
         style={{ "--index": 1 } as React.CSSProperties}
       >
@@ -73,7 +78,10 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col px-8 w-[500px] container">
-          <label htmlFor="recommendations" className="text-lg font-semibold mb-2">
+          <label
+            htmlFor="recommendations"
+            className="text-lg font-semibold mb-2"
+          >
             Clothing Recommendations
           </label>
           <textarea
@@ -101,6 +109,30 @@ export default function Home() {
         >
           Get Weather Data
         </button>
+        <button className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded">
+          Ping Model API
+        </button>
+      </div>
+
+      <div className="mt-4 w-full py-24 flex flex-col stretch border border-primary p-2">
+        {messages.map((m) => (
+          <div key={m.id}>
+            {m.role === "user" ? "User: " : "AI: "}
+            {m.content}
+          </div>
+        ))}
+
+        <form onSubmit={handleSubmit}>
+          <label>
+            Say something...
+            <input
+              className="w-full max-w-md bottom-0 border border-primary rounded mb-8 shadow-lg p-2"
+              value={input}
+              onChange={handleInputChange}
+            />
+          </label>
+          <button className="border broder-primary shadow-lg p-2" type="submit">Send</button>
+        </form>
       </div>
     </main>
   );
