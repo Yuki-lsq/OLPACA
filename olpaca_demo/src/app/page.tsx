@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useChat } from "ai/react";
 
 import { getWeatherProps } from "./api/WeatherData";
+import { testModelAPI } from "./api/Bedrock";
 
 export default function Home() {
   const [inputTemp, setTemp] = useState("");
@@ -109,7 +110,9 @@ export default function Home() {
         >
           Get Weather Data
         </button>
-        <button className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded">
+        <button className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
+          onClick={testModelAPI}
+        >
           Ping Model API
         </button>
       </div>
