@@ -6,6 +6,7 @@ import Head from "next/head";
 import { getWeatherProps } from "./api/WeatherData";
 import { testModelAPI } from "./api/Bedrock";
 //import { initMap } from "./api/GoogleMap";
+import apiJS from "./js/api.js";
 import { Loader } from "@googlemaps/js-api-loader";
 
 // function calculateAndDisplayRoute(
@@ -89,6 +90,7 @@ export default function Home() {
   };
 
   const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { get_route } = apiJS();
 
   // @ts-ignore google.maps.plugins
   const loader = new Loader({
@@ -101,6 +103,14 @@ export default function Home() {
     const { Map } = (await google.maps.importLibrary(
       "maps",
     )) as google.maps.MapsLibrary;
+
+    // Yuki's testing
+    var origin = "New York, NY"
+    var destination = "Los Angeles, CA"
+    
+    // Function for running the google maps api
+    get_route(origin, destination);
+
     map = new Map(document.getElementById("map") as HTMLElement, {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
