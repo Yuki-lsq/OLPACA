@@ -8,6 +8,7 @@ import { testModelAPI } from "./api/Bedrock";
 //import { initMap } from "./api/GoogleMap";
 import apiJS from "./js/api.js";
 import { Loader } from "@googlemaps/js-api-loader";
+import FilterMenu from "./components/MapMenu";
 
 // function calculateAndDisplayRoute(
 //   directionsService: google.maps.DirectionsService,
@@ -66,6 +67,16 @@ export default function Home() {
   const [inputLat, setLat] = useState("");
   const [inputLong, setLong] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [selectedDestination, setSelectedDestination] = useState('Current Destination');
+  const [selectedDepartDateTime, setSelectedDepartDateTime] = useState('Now');
+  const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>([]);
+
+  const handleApplyFilters = (destination: string, departDateTime: string, avoidOptions: string[]) => {
+    setSelectedDestination(destination);
+    setSelectedDepartDateTime(departDateTime);
+    setSelectedAvoidOptions(avoidOptions);
+    // update map data
+  };
 
   const handleTemperatureChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>,
@@ -147,11 +158,19 @@ export default function Home() {
           recommendations.
         </p>
         <hr className="h-px my-8 bg-secondary border-0" />
-        <div
-          className="animate-in flex flex-row justify-center w-full h-[500px]"
-          style={{ "--index": 3 } as React.CSSProperties}
-          id="map"
-        />
+        <div className="relative">
+          <div
+            className="animate-in flex flex-row justify-center w-full h-[500px]"
+            style={{ "--index": 3 } as React.CSSProperties}
+            id="map"
+          >
+          </div>
+          <FilterMenu onSelect={handleApplyFilters} />
+          <p>Text output preview:</p>
+          <p>Selected Destination: {selectedDestination}</p>
+          <p>Selected Departure: {selectedDepartDateTime}</p>
+          <p>Selected Avoid Options: {selectedAvoidOptions.join(' ')}</p>
+        </div>
 
         <div
           className="animate-in flex flex-col md:flex-row md:divide-x mt-8"
@@ -243,7 +262,7 @@ export default function Home() {
         >
           <button
             className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={getWeatherProps(handleLatChange, handleLongChange)}
+            onClick={getWeatherProps("-37.804874", "144.96259")}
           >
             Get Weather Data
           </button>
