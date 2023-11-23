@@ -2,8 +2,9 @@
 const nextConfig = {
   env: {
     WEATHER_API_KEY: process.env.WEATHER_API_KEY,
-    ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+    ACCESS_KEY_ID: process.env.ACCESS_KEY_ID,
+    SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
+    GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY
   },
 };
 
