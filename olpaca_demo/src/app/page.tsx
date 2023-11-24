@@ -6,11 +6,10 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { PromptTemplate } from "langchain/prompts";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { RunnableSequence } from "langchain/schema/runnable";
-import { llmCommand } from "./api/Bedrock";
 
 import getWeatherProps from "./api/WeatherData";
-import { templateBuilder } from "./api/llm-command";
-import FilterMenu from "./components/MapMenu";
+import { templateBuilder, llmCommand, parser } from "./utils/llm";
+// import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
   const [inputTemp, setTemp] = useState("");
@@ -58,53 +57,47 @@ export default function Home() {
   };
 
   const handleGenerateOutput = async () => {
-    const locations = ['Parkville, Melbourne, Australia', 'Docklands, Melbourne'];
-    const temperatures = ['29', '29'];
-    const outputParser = StructuredOutputParser.fromNamesAndDescriptions({
-      weatherSummary: "summary of weather",
-      clothesRecommendation: "clothes recommendation for the human based on weather",
-    });
-
-    const locationDict: Record<string, string> = {};
-    const temperatureDict: Record<string, string> = {};
-    locations.forEach((location, index) => {
-      locationDict[`location${index}`] = location;
-    });
-    temperatures.forEach((temperature, index) => {
-      temperatureDict[`temperature${index}`] = temperature;
-    });
-    const inputVars: Record<string, string> = { ...locationDict, ...temperatureDict };
     try {
-      // Create the final prompt here using the templateBuilder function
-
-      const builtTemplate = templateBuilder(locations);
-      // const prompt = PromptTemplate.fromTemplate({
-      //   template: builtTemplate,
-      //   partialVariables: {
-      //     format_instructions: outputParser.getFormatInstructions(),
-      //   },
+      const locations = [
+        "Parkville, Melbourne, Australia",
+        "Docklands, Melbourne",
+      ];
+      const temperatures = ["29", "29"];
+      // const outputParser = StructuredOutputParser.fromNamesAndDescriptions({
+      //   weatherSummary: "summary of weather",
+      //   clothesRecommendation: "clothes recommendation for the human based on weather",
       // });
-      const prompt = PromptTemplate.fromTemplate(
-        builtTemplate
-      )
 
-      const chain = RunnableSequence.from([
-        prompt,
-        llmCommand,
-        outputParser,
-      ]);
+      const locationDict: Record<string, string> = {};
+      const temperatureDict: Record<string, string> = {};
+      locations.forEach((location, index) => {
+        locationDict[`location${index}`] = location;
+      });
+      temperatures.forEach((temperature, index) => {
+        temperatureDict[`temperature${index}`] = temperature;
+      });
+      const inputValues: Record<string, string> = {
+        ...locationDict,
+        ...temperatureDict,
+        style: "casual",
+        sex: "female",
+      };
+      const template = templateBuilder(locations.length);
+
+      const prompt = PromptTemplate.fromTemplate(template);
+
+      const chain = RunnableSequence.from([prompt, llmCommand, parser]);
 
       const response = await chain.invoke({
-        ...inputVars,
-        format_instructions: outputParser.getFormatInstructions(),
+        ...inputValues,
+        format_instructions: parser.getFormatInstructions(),
       });
-      console.log(response);
-      // Invoke the model with the final parsed prompt
-      // const response = await chain.invoke({** inputValues});
+
       // setOutputText(response);
+      console.log(typeof response);
     } catch (error) {
       console.log(error);
-    };
+    }
   };
 
   const { messages, input, handleInputChange, handleSubmit } = useChat();
@@ -173,7 +166,7 @@ export default function Home() {
             style={{ "--index": 3 } as React.CSSProperties}
             id="map"
           ></div>
-          <FilterMenu onApply={handleApplyFilters} />
+          {/*<FilterMenu onApply={handleApplyFilters} />*/}
           <p>Text output preview:</p>
           <p>Selected Destination: {selectedDestination}</p>
           <p>Selected Departure: {selectedDepartDateTime}</p>
@@ -274,16 +267,10 @@ export default function Home() {
           >
             Get Weather Data
           </button>
-          {/*
-          <button
-            className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={llmCommand}
-          >
-            Ping Model API
-          </button>
-          */}
+
         </div>
 
+        {/*
         <div className="mt-4 w-full py-24 flex flex-col border border-primary p-2 rounded-lg">
           {messages.map((m) => (
             <div key={m.id}>
@@ -309,6 +296,7 @@ export default function Home() {
             </button>
           </form>
         </div>
+        */}
 
       </main>
     </div>
