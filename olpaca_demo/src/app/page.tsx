@@ -1,77 +1,34 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useChat } from "ai/react";
 import Head from "next/head";
-
-import { getWeatherProps } from "./api/WeatherData";
-import { testModelAPI } from "./api/Bedrock";
-//import { initMap } from "./api/GoogleMap";
-import apiJS from "./js/api.js";
 import { Loader } from "@googlemaps/js-api-loader";
+import { PromptTemplate } from "langchain/prompts";
+import { StructuredOutputParser } from "langchain/output_parsers";
+import { RunnableSequence } from "langchain/schema/runnable";
+import { llmCommand } from "./api/Bedrock";
+
+import getWeatherProps from "./api/WeatherData";
+import { templateBuilder } from "./api/llm-command";
 import FilterMenu from "./components/MapMenu";
 
-// function calculateAndDisplayRoute(
-//   directionsService: google.maps.DirectionsService,
-//   directionsDisplay: google.maps.DirectionsRenderer,
-//   pointA: google.maps.LatLng,
-//   pointB: google.maps.LatLng,
-// ) {
-//   directionsService.route(
-//     {
-//       origin: pointA,
-//       destination: pointB,
-//       avoidTolls: true,
-//       avoidHightways: false,
-//       travelMode: google.maps.TravelMode.DRIVING,
-//     },
-//     function (response, status) {
-//       if (status == google.maps.DirectionsStatus.OK) {
-//         directionsDisplay.setDirections(response);
-//       } else {
-//         window.alert("Directions request failed due to " + status);
-//       }
-//     },
-//   );
-// }
-// function initMap() {
-//   let pointA = new google.maps.LatLng(-37.79, 144.92),
-//   pointB = new google.maps.LatLng(-37.82, 144.97),
-//   myOptions = {
-//     zoom: 7,
-//     center: pointA,
-//   },
-//   map = new google.maps.Map(document.getElementById("map") as HTMLElement, myOptions),
-//   directionsService = new google.maps.DirectionsService(),
-//   directionsDisplay = new google.maps.DirectionsRenderer({
-//     map: map
-//   }),
-//   markerA = new google.maps.Marker({
-//     position: pointA,
-//     title: "point A",
-//     label: "A",
-//     map: map
-//   }),
-//   markerB = new google.maps.Marker({
-//     position: pointB,
-//     title: "point B",
-//     label: "B",
-//     map: map
-//   });
-//
-//   calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, pointB);
-// }
-//
 export default function Home() {
   const [inputTemp, setTemp] = useState("");
   const [inputFit, setFit] = useState("");
   const [inputLat, setLat] = useState("");
   const [inputLong, setLong] = useState("");
   const [outputText, setOutputText] = useState("");
-  const [selectedDestination, setSelectedDestination] = useState('Current Destination');
-  const [selectedDepartDateTime, setSelectedDepartDateTime] = useState('Now');
-  const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>([]);
+  const [selectedDestination, setSelectedDestination] = useState("");
+  const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
+  const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
+    [],
+  );
 
-  const handleApplyFilters = (destination: string, departDateTime: string, avoidOptions: string[]) => {
+  const handleApplyFilters = (
+    destination: string,
+    departDateTime: string,
+    avoidOptions: string[],
+  ) => {
     setSelectedDestination(destination);
     setSelectedDepartDateTime(departDateTime);
     setSelectedAvoidOptions(avoidOptions);
@@ -96,12 +53,61 @@ export default function Home() {
     setLong(event.target.value);
   };
 
-  const handleGenerateOutput = () => {
-    setOutputText("This should be the generated output");
+  const handleGetWeatherData = () => {
+    getWeatherProps("-37.804874", "144.96259");
+  };
+
+  const handleGenerateOutput = async () => {
+    const locations = ['Parkville, Melbourne, Australia', 'Docklands, Melbourne'];
+    const temperatures = ['29', '29'];
+    const outputParser = StructuredOutputParser.fromNamesAndDescriptions({
+      weatherSummary: "summary of weather",
+      clothesRecommendation: "clothes recommendation for the human based on weather",
+    });
+
+    const locationDict: Record<string, string> = {};
+    const temperatureDict: Record<string, string> = {};
+    locations.forEach((location, index) => {
+      locationDict[`location${index}`] = location;
+    });
+    temperatures.forEach((temperature, index) => {
+      temperatureDict[`temperature${index}`] = temperature;
+    });
+    const inputVars: Record<string, string> = { ...locationDict, ...temperatureDict };
+    try {
+      // Create the final prompt here using the templateBuilder function
+
+      const builtTemplate = templateBuilder(locations);
+      // const prompt = PromptTemplate.fromTemplate({
+      //   template: builtTemplate,
+      //   partialVariables: {
+      //     format_instructions: outputParser.getFormatInstructions(),
+      //   },
+      // });
+      const prompt = PromptTemplate.fromTemplate(
+        builtTemplate
+      )
+
+      const chain = RunnableSequence.from([
+        prompt,
+        llmCommand,
+        outputParser,
+      ]);
+
+      const response = await chain.invoke({
+        ...inputVars,
+        format_instructions: outputParser.getFormatInstructions(),
+      });
+      console.log(response);
+      // Invoke the model with the final parsed prompt
+      // const response = await chain.invoke({** inputValues});
+      // setOutputText(response);
+    } catch (error) {
+      console.log(error);
+    };
   };
 
   const { messages, input, handleInputChange, handleSubmit } = useChat();
-  const { get_route } = apiJS();
 
   // @ts-ignore google.maps.plugins
   const loader = new Loader({
@@ -116,19 +122,16 @@ export default function Home() {
     )) as google.maps.MapsLibrary;
 
     // Yuki's testing
-    var origin = "New York, NY"
-    var destination = "Los Angeles, CA"
-    
-    // Function for running the google maps api
-    get_route(origin, destination);
+    const origin = "New York, NY";
+    const destination = "Los Angeles, CA";
+    const mode = "driving";
 
+    // Function for running the google maps api
     map = new Map(document.getElementById("map") as HTMLElement, {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
     });
   });
-
-  // initMap();
 
   return (
     <div>
@@ -138,6 +141,12 @@ export default function Home() {
           async
           defer
         />
+        {/* <script
+          async
+          defer
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places`}
+          type="text/javascript"
+        /> */}
       </Head>
       <main>
         <h1
@@ -163,13 +172,12 @@ export default function Home() {
             className="animate-in flex flex-row justify-center w-full h-[500px]"
             style={{ "--index": 3 } as React.CSSProperties}
             id="map"
-          >
-          </div>
-          <FilterMenu onSelect={handleApplyFilters} />
+          ></div>
+          <FilterMenu onApply={handleApplyFilters} />
           <p>Text output preview:</p>
           <p>Selected Destination: {selectedDestination}</p>
           <p>Selected Departure: {selectedDepartDateTime}</p>
-          <p>Selected Avoid Options: {selectedAvoidOptions.join(' ')}</p>
+          <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
         </div>
 
         <div
@@ -262,19 +270,21 @@ export default function Home() {
         >
           <button
             className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={getWeatherProps("-37.804874", "144.96259")}
+            onClick={handleGetWeatherData}
           >
             Get Weather Data
           </button>
+          {/*
           <button
             className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={testModelAPI}
+            onClick={llmCommand}
           >
             Ping Model API
           </button>
+          */}
         </div>
 
-        <div className="mt-4 w-full py-24 flex flex-col stretch border border-primary p-2">
+        <div className="mt-4 w-full py-24 flex flex-col border border-primary p-2 rounded-lg">
           {messages.map((m) => (
             <div key={m.id}>
               {m.role === "user" ? "User: " : "AI: "}
@@ -282,7 +292,7 @@ export default function Home() {
             </div>
           ))}
 
-          <form onSubmit={handleSubmit}>
+          <form className="flex flex-col" onSubmit={handleSubmit}>
             <label>
               Say something...
               <input
@@ -299,6 +309,7 @@ export default function Home() {
             </button>
           </form>
         </div>
+
       </main>
     </div>
   );

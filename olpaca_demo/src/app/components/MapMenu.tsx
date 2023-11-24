@@ -1,10 +1,10 @@
 // components/DropdownMenu.tsx
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 const FilterMenu: React.FC<{
-  onSelect: (destination: string, departDateTime: string, avoidOptions: string[]) => void;
-}> = ({ onSelect }) => {
-  const [destination, setDestination] = useState('Current Destination');
+  onApply: (destination: string, departDateTime: string, avoidOptions: string[]) => void;
+}> = ({ onApply }) => {
+  const [destination, setDestination] = useState('');
   const [departDate, setDepartDate] = useState('Now');
   const [departTime, setDepartTime] = useState('Now');
   const [avoidOptions, setAvoidOptions] = useState<string[]>([]);
@@ -14,17 +14,40 @@ const FilterMenu: React.FC<{
       departDate === 'Now'
         ? 'Now'
         : `${departDate} ${departTime === 'Now' ? '00:00' : departTime}`;
-
-    onSelect(destination, departDateTime, avoidOptions);
+    onApply(destination, departDateTime, avoidOptions);
   };
+
+  const autocompleteRef = useRef<HTMLInputElement>(null);
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
+
+  const handlePlaceChanged = () => {
+    if (autocompleteService.current && autocompleteRef.current) {
+      const placeInput = autocompleteRef.current;
+      const placeService = autocompleteService.current;
+      placeService.getPlacePredictions(
+        { input: placeInput.value },
+        (predictions: google.maps.places.AutocompletePrediction[] | null) => {
+          if (predictions && predictions.length > 0) {
+            console.log(predictions);
+          }
+        }
+      );
+    }
+  };
+
   return (
     <div className="absolute top-0 right-0 m-4 bg-white p-4 rounded shadow">
       <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700">Destination</label>
         <input
+          ref={autocompleteRef}
           type="text"
+          placeholder="Current Destination"
           value={destination}
-          onChange={(e) => setDestination(e.target.value)}
+          onFocus={(e) => {
+            autocompleteService.current = new window.google.maps.places.AutocompleteService();
+          }}
+          onChange={handlePlaceChanged}
           className="p-2 border rounded"
         />
       </div>

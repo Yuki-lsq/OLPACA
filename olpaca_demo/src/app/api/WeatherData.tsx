@@ -1,6 +1,6 @@
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
 
-export async function getWeatherProps(latitude: string, longitude: string) {
+export default async function getWeatherProps(latitude: string, longitude: string) {
   const axios = require("axios");
   const options = {
     method: "GET",
