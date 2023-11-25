@@ -11,9 +11,6 @@ import { templateBuilder, llmCommand, parser } from "./utils/llm";
 import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
-  const [inputTemp, setTemp] = useState("");
-  const [inputLat, setLat] = useState("");
-  const [inputLong, setLong] = useState("");
   const [outputText, setOutputText] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("");
   const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
@@ -42,20 +39,6 @@ export default function Home() {
     // loader.load().then(async () => {
     //   routeMap = calcRoute(destination, departDateTime, avoidOptions)
     // });
-  };
-
-  const handleTemperatureChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    setTemp(event.target.value);
-  };
-
-  const handleLatChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setLat(event.target.value);
-  };
-
-  const handleLongChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setLong(event.target.value);
   };
 
   const handleGetWeatherData = () => {
@@ -180,19 +163,17 @@ export default function Home() {
           recommendations.
         </p>
         <hr className="h-px my-8 bg-secondary border-0" />
-        <div className="relative">
+        <div className="flex flex-row w-full">
           <div
             className="animate-in flex flex-row justify-center w-full h-[500px]"
             style={{ "--index": 3 } as React.CSSProperties}
             id="map"
-            
           ></div>
           <FilterMenu onApply={handleApplyFilters} />
-          <p>Text output preview:</p>
-          <p>Selected Destination: {selectedDestination}</p>
-          <p>Selected Departure: {selectedDepartDateTime}</p>
-          <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
         </div>
+        <p>Selected Destination: {selectedDestination}</p>
+        <p>Selected Departure: {selectedDepartDateTime}</p>
+        <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
 
         <div
           className="animate-in flex flex-col md:flex-row mt-8"

@@ -8,6 +8,7 @@ const FilterMenu: React.FC<{
     avoidOptions: string[],
   ) => void;
 }> = ({ onApply }) => {
+  const [location, setLocation] = useState("");
   const [destination, setDestination] = useState("");
   const [departDate, setDepartDate] = useState("Now");
   const [departTime, setDepartTime] = useState("Now");
@@ -22,7 +23,7 @@ const FilterMenu: React.FC<{
   };
 
   const handleLocChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDestination(event.target.value);
+    setLocation(event.target.value);
   };
 
   const handleDestChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -30,18 +31,18 @@ const FilterMenu: React.FC<{
   };
 
   return (
-    <div className="absolute top-0 right-0 m-4 bg-white p-4 rounded shadow">
+    <div className="top-0 right-0 m-4 bg-white p-4 rounded shadow">
       <div className="mb-1">
         <label
-          htmlFor="destination"
+          htmlFor="location"
           className="block text-sm font-medium text-primary"
         >
           Current Location
         </label>
         <textarea
-          id="destination"
+          id="location"
           className="border border-primary text-sm rounded-lg p-2 resize-none h-10"
-          value={destination}
+          value={location}
           onChange={handleLocChange}
           placeholder="Enter Current Location"
         />
@@ -67,7 +68,7 @@ const FilterMenu: React.FC<{
         <label className="block text-sm font-medium text-primary">
           Depart
         </label>
-        <div className="flex">
+        <div className="flex py-2">
           <select
             value={departDate}
             onChange={(e) => setDepartDate(e.target.value)}
