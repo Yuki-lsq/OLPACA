@@ -14,12 +14,12 @@ export const llmCommand = new Bedrock({
     secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
   },
   modelKwargs: {
-    max_tokens: 200,
+    max_tokens: 300,
   },
 });
 
 export const parser = StructuredOutputParser.fromNamesAndDescriptions({
-  weatherSummary: "summary of weather taking into account that they are travelling between the destinations",
+  weatherSummary: "summary of weather (state the temperature) at each location taking into account that they are travelling between the destinations",
   clothesRecommendation:
     "clothing recommendation for the human based on weather summary by their mode of transport",
 });
