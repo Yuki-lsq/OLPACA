@@ -12,22 +12,11 @@ import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
   const [outputText, setOutputText] = useState("");
-  const [selectedOrigin, setSelectedOrigin] = useState("");
-  const [selectedDestination, setSelectedDestination] = useState("");
-  const [selectedMode, setSelectedMode] = useState("");
-  const [addedStops, setAddedStops] = useState<string[]>(
-    [],
-  );
-  const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
-  const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
-    [],
-  );
   const [inputSex, setSex] = useState("");
   const [inputAge, setAge] = useState("");
   const [inputHeight, setHeight] = useState("");
   const [inputWeight, setWeight] = useState("");
   const [inputExerciseFreq, setExerciseFreq] = useState("");
-
   const temporary_lat = "-37.804874";
   const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
@@ -60,6 +49,7 @@ export default function Home() {
     setExerciseFreq(event.target.value);
   };
 
+  var estimatedTimes;
   const handleApplyFilters = (
     origin: string,
     destination: string,
@@ -68,12 +58,6 @@ export default function Home() {
     departDateTime: string,
     avoidOptions: string[],
   ) => {
-    setSelectedOrigin(origin);
-    setSelectedDestination(destination);
-    setAddedStops(stops);
-    setSelectedMode(mode);
-    setSelectedDepartDateTime(departDateTime);
-    setSelectedAvoidOptions(avoidOptions);
     // update map data
     loader.load().then(async () => {
       const { Map } = (await google.maps.importLibrary(
@@ -126,6 +110,9 @@ export default function Home() {
       await directions.route(mapsRequest, function (response, status) {
         if (status == "OK") {
           routeMap.setDirections(response);
+          // if (response?.routes != null) {
+          //   estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
+          // }
         }
       });
     });
@@ -194,7 +181,6 @@ export default function Home() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   let map;
-  let routeMap;
   loader.load().then(async () => {
     const { Map } = (await google.maps.importLibrary(
       "maps",
@@ -205,25 +191,6 @@ export default function Home() {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
     });
-
-    // var directions = new DirectionsService();
-
-    // // Yuki's testing
-    // const origin = "New York, NY";
-    // const defaultDestination = "Los Angeles, CA";
-    // const mode = "driving";
-
-    // var mapsRequest = {
-    //   origin: origin,
-    //   destination: defaultDestination,
-    //   travelMode: TravelMode.DRIVING
-    // };
-
-    // directions.route(mapsRequest, function(response, status) {
-    //   if (status == 'OK') {
-    //     routeMap.setDirections(response);
-    //   }
-    // });
   });
 
   return (
@@ -246,7 +213,7 @@ export default function Home() {
           className="animate-in mb-4 text-2xl font-extrabold md:text-3xl lg:text-4xl"
           style={{ "--index": 1 } as React.CSSProperties}
         >
-          <span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
             Wear
           </span>
           ther
@@ -384,30 +351,13 @@ export default function Home() {
   );
 }
 
-async function calcRoute(
-  origin: string,
-  destination: string,
-  departDateTime: any,
-  avoidOptions: any,
-) {
-  const { DirectionsService, TravelMode, DirectionsRenderer } =
-    (await google.maps.importLibrary("routes")) as google.maps.RoutesLibrary;
+// async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
 
-  var directions = new DirectionsService();
-  var routeMap = new DirectionsRenderer();
+//   var estimatedTimes;
 
-  // Yuki's testing
-  var mapsRequest = {
-    origin: origin,
-    destination: destination,
-    travelMode: TravelMode.DRIVING,
-  };
+//   for(let i = 0; i < routes.length; i++) {
 
-  directions.route(mapsRequest, function (response, status) {
-    if (status == "OK") {
-      return response;
-    }
-  });
+//   }
 
-  return null;
-}
+//   return estimatedTimes;
+// }

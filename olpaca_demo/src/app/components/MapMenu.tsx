@@ -1,5 +1,5 @@
 // components/DropdownMenu.tsx
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 const FilterMenu: React.FC<{
   onApply: (
@@ -40,6 +40,25 @@ const FilterMenu: React.FC<{
     setStops(event.target.value.split(","));
   };
 
+  const [dateItems, setDateItems] = useState<string[]>()
+  useEffect(() => {
+    var allItems = []
+    var startingDay = new Date();
+    var select = document.getElementById('departDate');
+    for(var i=1; i<7; i++) {
+      if (select != null && select.children.length <= 6) {
+        var thisDay = new Date();
+        thisDay.setDate(startingDay.getDate() + i)
+        var thisDayString = thisDay.getDate() + " " + MonthAsString(thisDay.getMonth()) + " " + thisDay.getFullYear();
+        // var opt = document.createElement('option');
+        // opt.value = thisDayString;
+        // opt.innerHTML = thisDayString;
+        // select.appendChild(opt);
+        allItems.push(thisDayString)
+      }
+    } 
+    setDateItems(allItems)
+  }, []);
 
   return (
     <div className="top-0 right-0 m-4 bg-white p-4 rounded shadow">
@@ -119,9 +138,11 @@ const FilterMenu: React.FC<{
           <select
             value={departDate}
             onChange={(e) => setDepartDate(e.target.value)}
+            id="departDate"
             className="p-2 border border-primary rounded-lg mr-2"
           >
             <option value="Now">Now</option>
+            {dateItems?.map(item => <option value={item}>{item}</option>)}
             {/* Options */}
           </select>
           <select
@@ -240,5 +261,24 @@ const FilterMenu: React.FC<{
     </div>
   );
 };
+
+function MonthAsString(monthIndex: number) {
+  var d = new Date();
+  var month = new Array();
+  month[0] = "January";
+  month[1] = "February";
+  month[2] = "March";
+  month[3] = "April";
+  month[4] = "May";
+  month[5] = "June";
+  month[6] = "July";
+  month[7] = "August";
+  month[8] = "September";
+  month[9] = "October";
+  month[10] = "November";
+  month[11] = "December";
+
+  return month[monthIndex];
+}
 
 export default FilterMenu;
