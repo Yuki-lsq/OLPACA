@@ -14,6 +14,10 @@ export default function Home() {
   const [outputText, setOutputText] = useState("");
   const [selectedOrigin, setSelectedOrigin] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("");
+  const [selectedMode, setSelectedMode] = useState("");
+  const [addedStops, setAddedStops] = useState<string[]>(
+    [],
+  );
   const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
   const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
     [],
@@ -31,11 +35,15 @@ export default function Home() {
   const handleApplyFilters = (
     origin: string,
     destination: string,
+    stops: string[],
+    mode: string,
     departDateTime: string,
     avoidOptions: string[],
   ) => {
     setSelectedOrigin(origin);
     setSelectedDestination(destination);
+    setAddedStops(stops);
+    setSelectedMode(mode);
     setSelectedDepartDateTime(departDateTime);
     setSelectedAvoidOptions(avoidOptions);
     // update map data
@@ -44,7 +52,7 @@ export default function Home() {
         "maps",
       )) as google.maps.MapsLibrary;
   
-      const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
+      const { DirectionsService, TravelMode, DirectionsRenderer} = (await google.maps.importLibrary(
         "routes",
       )) as google.maps.RoutesLibrary;
 
@@ -54,10 +62,36 @@ export default function Home() {
       map = new Map(document.getElementById("map") as HTMLElement);
       routeMap.setMap(map)
 
+      const waypts: google.maps.DirectionsWaypoint[] = [];
+      for (let i = 0; i < stops.length; i++) {
+        waypts.push({
+          location: stops[i],
+          stopover: true
+        });
+      }
+      var travelMode;
+      switch(mode) {
+        case "WALKING":
+          travelMode = google.maps.TravelMode.WALKING
+          break;
+        case "DRIVING":
+          travelMode = google.maps.TravelMode.DRIVING
+          break;
+        case "BICYCLING":
+          travelMode = google.maps.TravelMode.BICYCLING
+          break;
+        case "TRANSIT":
+          travelMode = google.maps.TravelMode.TRANSIT
+          break;
+        default:
+          travelMode = google.maps.TravelMode.DRIVING
+      }
+
       var mapsRequest = {
         origin: origin,
         destination: destination,
-        travelMode: TravelMode.DRIVING
+        waypoints: waypts,
+        travelMode: travelMode
       };
     
       await directions.route(mapsRequest, function(response, status) {
@@ -190,16 +224,7 @@ export default function Home() {
             id="map"
           ></div>
           <FilterMenu onApply={handleApplyFilters} />
-          <p>Text output preview:</p>
-          <p>Selected Origin: {selectedOrigin}</p>
-          <p>Selected Destination: {selectedDestination}</p>
-          <p>Selected Departure: {selectedDepartDateTime}</p>
-          <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
         </div>
-        <p>Selected Destination: {selectedDestination}</p>
-        <p>Selected Departure: {selectedDepartDateTime}</p>
-        <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
-
         <div
           className="animate-in flex flex-col md:flex-row mt-8"
           style={{ "--index": 3 } as React.CSSProperties}

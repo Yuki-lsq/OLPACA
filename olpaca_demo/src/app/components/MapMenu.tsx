@@ -5,12 +5,17 @@ const FilterMenu: React.FC<{
   onApply: (
     origin: string,
     destination: string,
+    stops: string[],
+    mode: string,
     departDateTime: string,
     avoidOptions: string[],
   ) => void;
 }> = ({ onApply }) => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
+  const [showStops, setShowStops] = useState(false);
+  const [stops, setStops] = useState<string[]>([]);
+  const [mode, setMode] = useState("");
   const [departDate, setDepartDate] = useState("Now");
   const [departTime, setDepartTime] = useState("Now");
   const [avoidOptions, setAvoidOptions] = useState<string[]>([]);
@@ -20,7 +25,7 @@ const FilterMenu: React.FC<{
       departDate === "Now"
         ? "Now"
         : `${departDate} ${departTime === "Now" ? "00:00" : departTime}`;
-    onApply(origin, destination, departDateTime, avoidOptions);
+    onApply(origin, destination, stops, mode, departDateTime, avoidOptions);
   };
 
   const handleLocChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -30,6 +35,11 @@ const FilterMenu: React.FC<{
   const handleDestChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDestination(event.target.value);
   };
+
+  const handleStopChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setStops(event.target.value.split(","));
+  };
+
 
   return (
     <div className="top-0 right-0 m-4 bg-white p-4 rounded shadow">
@@ -64,7 +74,43 @@ const FilterMenu: React.FC<{
           placeholder="Enter Destination"
         />
       </div>
-
+      {
+        !showStops &&
+        <input type="button" className="border border-primary rounded-lg p-2" name="addStops" value="Add Stops" onClick={() => setShowStops(true)} />
+      }
+      {
+        showStops &&
+        <div id="stopsId" className="mb-1">
+          <label
+            htmlFor="destination"
+            className="block text-sm font-medium text-primary"
+          >
+              Stops
+            </label>
+          <textarea
+            id="destination"
+            className="border border-primary text-sm rounded-lg p-2 resize-none h-10"
+            value={stops}
+            onChange={handleStopChange}
+            placeholder="Enter Stops"
+          />
+        </div>
+      }
+      <br/><br/>
+      <label
+        htmlFor="mode"
+        className="block text-sm font-medium text-primary"
+      >
+        Travel Mode
+      </label>
+      <select className="form-control p-2 border border-primary rounded-lg mr-2" id="mode" value={mode} onChange={(e) => setMode(e.target.value)}>
+        <option value="">Select Mode</option>
+        <option value="WALKING">Walking</option>
+        <option value="DRIVING">Driving</option>
+        <option value="BICYCLING">Bicycling</option>
+        <option value="TRANSIT">Transit</option>
+      </select>
+      <br/><br/>
       <div className="mb-1">
         <label className="block text-sm font-medium text-primary">
           Depart
