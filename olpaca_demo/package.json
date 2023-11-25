@@ -21,6 +21,7 @@
     "@smithy/signature-v4": "^2.0.15",
     "@smithy/util-utf8": "^2.0.2",
     "ai": "^2.2.25",
+    "aws-sdk": "^2.1502.0",
     "axios": "^1.6.2",
     "langchain": "^0.0.195",
     "next": "14.0.3",
@@ -29,10 +30,10 @@
     "react-icons": "^4.11.0"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.54.9",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/google.maps": "^3.54.9",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.3",
