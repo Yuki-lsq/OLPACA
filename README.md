@@ -29,3 +29,5 @@ Step into style with Wearther, your ultimate travel companion in the world of fa
     ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+**Video Link: [link](https://youtu.be/k_cyUIzJ8wc)** 
