@@ -50,10 +50,6 @@ export default function Home() {
     setTemp(event.target.value);
   };
 
-  const handleFitChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFit(event.target.value);
-  };
-
   const handleLatChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLat(event.target.value);
   };
