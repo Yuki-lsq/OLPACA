@@ -16,8 +16,8 @@ Step into style with Wearther, your ultimate travel companion in the world of fa
     ```
 
 2. Retrieve free API Keys from the following places:
-    -  [Amazon Web Services](https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html) - for accessing the model endpoint on SageMaker and connecting to the Cohere Command LLM model on BedRock
-    - [Google Maps Platform](https://developers.google.com/maps/documentation/javascript/get-api-key) - for accessing Google Maps
+    -  [Amazon Web Services](https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html) - for creating the model endpoint on SageMaker and subcribe to Cohere Command LLM model on BedRock
+    - [Google Maps Platform](https://developers.google.com/maps/documentation/javascript/get-api-key) - for accessing Google Maps platform API
     - [Weather API](https://rapidapi.com/weatherapi/api/weatherapi-com?fbclid=IwAR0_sKXGpKDDypw-OpITXU_jeCFDlpy1r0EkWlBga5eJjOdcZU5K1IyETdM) - for accessing WeatherAPI hosted on RapidAPI
 
 3. Copy `.env.example` to a new `.env.local` and fill in your API keys to set up the related environment.
