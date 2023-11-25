@@ -20,6 +20,7 @@ export default function Home() {
   const temporary_lat = "-37.804874";
   const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
+  const [selectedMode, setSelectedMode] = useState("");
 
   // @ts-ignore google.maps.plugins
   const loader = new Loader({
@@ -59,6 +60,7 @@ export default function Home() {
     avoidOptions: string[],
   ) => {
     // update map data
+    setSelectedMode(mode);
     loader.load().then(async () => {
       const { Map } = (await google.maps.importLibrary(
         "maps",
@@ -109,10 +111,12 @@ export default function Home() {
 
       await directions.route(mapsRequest, function (response, status) {
         if (status == "OK") {
+          console.log(response)
           routeMap.setDirections(response);
-          // if (response?.routes != null) {
-          //   estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
-          // }
+          if (response?.routes != null) {
+            estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
+            console.log(estimatedTimes)
+          }
         }
       });
     });
@@ -351,13 +355,22 @@ export default function Home() {
   );
 }
 
-// async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
+async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
 
-//   var estimatedTimes;
+  var chosenDate = Date.parse(departDateTime)
+  var estimatedTimes = new Array<Date>;
 
-//   for(let i = 0; i < routes.length; i++) {
+  var legs = routes[0].legs
+  var currentTime = chosenDate
+  for(let i = 0; i < legs.length; i++) {
+    if (legs[i].duration != null) {
+      var mins = legs[i].duration?.value
+      if (mins != undefined) {
+        currentTime = currentTime + ( mins * 1000 )
+        estimatedTimes.push(new Date(currentTime))
+      }
+    }
+  }
 
-//   }
-
-//   return estimatedTimes;
-// }
+  return estimatedTimes;
+}
