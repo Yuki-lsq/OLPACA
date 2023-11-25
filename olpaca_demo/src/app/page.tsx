@@ -10,6 +10,10 @@ import { fetchWeatherInfo, fetchForecastWeather } from "./api/WeatherData";
 import { templateBuilder, llmCommand, parser } from "./utils/llm";
 import { runInference } from "./utils/sagemaker";
 import FilterMenu from "./components/MapMenu";
+import moment from 'moment';
+import DataFrame from 'dataframe-js';
+import axios from 'axios';
+
 
 export default function Home() {
   const [outputText, setOutputText] = useState("");
@@ -18,8 +22,7 @@ export default function Home() {
   const [inputHeight, setHeight] = useState("");
   const [inputWeight, setWeight] = useState("");
   const [inputExerciseFreq, setExerciseFreq] = useState("");
-  const [predictedTemperatures, setPredictedTemperatures] =
-    useState<string[]>();
+  //const [predictedTemperatures, setPredictedTemperatures] = useState<string[]>();
 
   // const temporary_lat = "-37.804874";
   // const temporary_long = "144.96259";
@@ -33,10 +36,11 @@ export default function Home() {
   });
 
   const handlePredictions = async () => {
-    console.log(locationTimeMap);
+    console.log(locationTimeMap)
     for (const info of locationTimeMap.keys()) {
-      console.log(info);
+      console.log(info)
       const weatherData = await fetchForecastWeather(info);
+      console.log(weatherData)
       const {
         mintemp_c,
         maxtemp_c,
@@ -51,57 +55,53 @@ export default function Home() {
         cloud,
         temp_c,
       } = weatherData.current;
-      const inputFeatures: {
+      const inputFeatures : {
+        sex: string;
+        age: number;
+        height: number;
+        weight: number;
+        freqOfExercise: number;
+        PersonID: string;
         mintemp_c: number;
         maxtemp_c: number;
         precip_mm: number;
         sunshine: number;
         gust_kph: number;
-        daily_will_it_rain: number;
-        tom_will_it_rain: number;
+        daily_will_it_rain: string;
+        tom_will_it_rain: string;
         wind_kph: number;
         humidity: number;
         pressure_md: number;
         cloud: number;
         temp_c: number;
-        PersonID: number;
-        sex: number;
-        age: number;
-        height: number;
-        weight: number;
-        BMI: number;
-        freqOfExercise: number;
-        CI: number;
       } = {
-        mintemp_c: Number(17),
-        maxtemp_c: Number(20),
-        precip_mm: Number(precip_mm),
-        sunshine: Number(12.3),
-        gust_kph: Number(gust_kph),
-        daily_will_it_rain: Number(0),
-        tom_will_it_rain: Number(0),
-        wind_kph: Number(wind_kph),
-        humidity: Number(humidity),
-        pressure_md: Number(1006.3),
-        cloud: Number(cloud),
-        temp_c: Number(temp_c),
-        PersonID: 1,
-        sex: Number(inputSex),
-        age: Number(inputAge),
-        height: Number(inputHeight),
-        weight: Number(inputWeight),
-        BMI: Number(28.39),
-        freqOfExercise: Number(inputExerciseFreq),
-        CI: Number(2.30714363),
-      };
+          sex: String(inputSex),
+          age: Number(inputAge),
+          height: Number(inputHeight),
+          weight: Number(inputWeight),
+          freqOfExercise: Number(inputExerciseFreq),
+          PersonID: "1",
+          mintemp_c: Number(mintemp_c),
+          maxtemp_c: Number(maxtemp_c),
+          precip_mm: Number(precip_mm),
+          sunshine: Number(sunshine),
+          gust_kph: Number(gust_kph),
+          daily_will_it_rain: String(daily_will_it_rain),
+          tom_will_it_rain: String(tom_will_it_rain),
+          wind_kph: Number(wind_kph),
+          humidity: Number(humidity),
+          pressure_md: Number(pressure_md),
+          cloud: Number(cloud),
+          temp_c: Number(temp_c),
+        };
       try {
-        console.log(weatherData.current);
         const response = await runInference(inputFeatures);
         console.log("Prediction Result:", response);
       } catch (error) {
         console.error("Error getting prediction:", error);
-      }
+      };
     }
+    
   };
 
   const handleSexChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -127,6 +127,7 @@ export default function Home() {
   };
 
   var locationTimeMap = new Map<string, Date>();
+  var latLngList;
   const handleApplyFilters = (
     origin: string,
     destination: string,
@@ -158,44 +159,45 @@ export default function Home() {
       for (let i = 0; i < stops.length; i++) {
         waypts.push({
           location: stops[i],
-          stopover: true,
+          stopover: true
         });
       }
       var travelMode;
-      switch (mode) {
+      switch(mode) {
         case "WALKING":
-          travelMode = google.maps.TravelMode.WALKING;
+          travelMode = google.maps.TravelMode.WALKING
           break;
         case "DRIVING":
-          travelMode = google.maps.TravelMode.DRIVING;
+          travelMode = google.maps.TravelMode.DRIVING
           break;
         case "BICYCLING":
-          travelMode = google.maps.TravelMode.BICYCLING;
+          travelMode = google.maps.TravelMode.BICYCLING
           break;
         case "TRANSIT":
-          travelMode = google.maps.TravelMode.TRANSIT;
+          travelMode = google.maps.TravelMode.TRANSIT
           break;
         default:
-          travelMode = google.maps.TravelMode.DRIVING;
+          travelMode = google.maps.TravelMode.DRIVING
       }
 
       var mapsRequest = {
         origin: origin,
         destination: destination,
         waypoints: waypts,
-        travelMode: travelMode,
+        travelMode: travelMode
       };
 
       await directions.route(mapsRequest, function (response, status) {
         if (status == "OK") {
-          console.log(response);
+          console.log(response)
           routeMap.setDirections(response);
           if (response?.routes != null) {
-            locationTimeMap = calculateEstimatedTime(
-              response?.routes,
-              departDateTime,
-            );
-            console.log(locationTimeMap);
+            locationTimeMap = calculateEstimatedTime(response?.routes, departDateTime);
+            console.log(locationTimeMap)
+
+            latLngList = createLatLngList(response?.routes);
+            console.log("check below");
+            console.log(latLngList);
           }
         }
       });
@@ -209,12 +211,13 @@ export default function Home() {
   const handleGenerateOutput = async () => {
     try {
       const locations = [
-        "Parkville, Melbourne, Australia",
-        "Docklands, Melbourne",
+        "1 Austin Crescent East",
+        "Melbourne Central",
+        "St Kilda",
       ];
-      const temperatures = ["29", "29"];
-      const windSpeeds = ["6", "15"];
-      const ifRain = ["0", "1"];
+      const temperatures = ["25", "29", "27"];
+      const windSpeeds = ["6" , "15", "15"];
+      const ifRain = ["0", "1", "0"];
 
       const locationDict: Record<string, string> = {};
       const temperatureDict: Record<string, string> = {};
@@ -238,9 +241,9 @@ export default function Home() {
         ...windDict,
         ...ifRainDict,
         style: "casual",
-        mode: selectedMode,
+        mode: selectedMode, 
         sex: "female",
-        age: "20",
+        age: "20"
       };
       const template = templateBuilder(locations.length);
 
@@ -306,14 +309,7 @@ export default function Home() {
           className="animate-in text-sm font-normal lg:text-md"
           style={{ "--index": 2 } as React.CSSProperties}
         >
-          Step into style with Wearther, your ultimate travel companion n the
-          world of fashion. Unleash the power of personalised outift
-          recommendations based on real-time weather conditions and your unique
-          preferences. Beyond just forecasting the weather, Wearther curates the
-          perfect wardrobe for your journey, ensuring you stay comfortable and
-          chic no matter where your adventures take you. Seamlessly blending
-          fashion and functionality, this innovative app transforms your daily
-          clothing decisions into a delight experience.
+          Step into style with Wearther, your ultimate travel companion n the world of fashion. Unleash the power of personalised outift recommendations based on real-time weather conditions and your unique preferences. Beyond just forecasting the weather, Wearther curates the perfect wardrobe for your journey, ensuring you stay comfortable and chic no matter where your adventures take you. Seamlessly blending fashion and functionality, this innovative app transforms your daily clothing decisions into a delight experience.
         </p>
         <hr className="h-px my-4 bg-secondary border-0" />
         <div className="flex flex-row w-full">
@@ -424,41 +420,103 @@ export default function Home() {
           </div>
         </div>
 
-        <div
-          className="animate-in flex flex-row justify-center mt-4"
-          style={{ "--index": 4 } as React.CSSProperties}
-        >
-          <button
-            className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={handlePredictions}
-          >
-            Get Predictions
-          </button>
-        </div>
+        
       </main>
     </div>
   );
 }
 
-function calculateEstimatedTime(
-  routes: google.maps.DirectionsRoute[],
-  departDateTime: string,
-) {
-  var chosenDate = Date.parse(departDateTime);
-  var estimatedTimes = new Map<string, Date>();
+function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
 
-  var legs = routes[0].legs;
-  var currentTime = chosenDate;
-  for (let i = 0; i < legs.length; i++) {
+  var chosenDate = Date.parse(departDateTime)
+  var estimatedTimes = new Map<string, Date>()
+
+  var legs = routes[0].legs
+  var currentTime = chosenDate
+  for(let i = 0; i < legs.length; i++) {
     if (legs[i].duration != null) {
-      var endLocation = legs[i].end_address;
-      var mins = legs[i].duration?.value;
+      var endLocation = legs[i].end_address
+      var mins = legs[i].duration?.value
       if (mins != undefined) {
-        currentTime = currentTime + mins * 1000;
-        estimatedTimes.set(endLocation, new Date(currentTime));
+        currentTime = currentTime + ( mins * 1000 )
+        estimatedTimes.set(endLocation, new Date(currentTime))
       }
     }
   }
 
   return estimatedTimes;
 }
+
+
+
+
+function toOkta(val: number) {
+  if (val === 100) {
+    return 8;
+  }
+  return Math.min(Math.floor(val / 12.5), 7);
+}
+
+//const moment = require('moment');
+function extracCurrentWeatherData(realTimeData:any, forecastData:any) {
+  const sunrise = forecastData.forecast.forecastday[0].astro.sunrise;
+  const sunset = forecastData.forecast.forecastday[0].astro.sunset;
+
+  const sunriseTime = moment(sunrise, 'h:mm A');
+  const sunsetTime = moment(sunset, 'h:mm A');
+
+  const duration = parseFloat(((sunsetTime - sunriseTime) / 3600000).toFixed(1));
+
+  const weatherData = {
+    mintemp_c: [forecastData.forecast.forecastday[0].day.mintemp_c],
+    maxtemp_c: [forecastData.forecast.forecastday[0].day.maxtemp_c],
+    precip_mm: [realTimeData.current.precip_mm],
+    sunshine: [duration],
+    gust_kph: [realTimeData.current.gust_kph],
+    daily_will_it_rain: [forecastData.forecast.forecastday[0].day.daily_will_it_rain],
+    tom_will_it_rain: [forecastData.forecast.forecastday[1].day.daily_will_it_rain],
+    wind_kph: [realTimeData.current.wind_kph],
+    humidity: [realTimeData.current.humidity],
+    pressure_mb: [realTimeData.current.pressure_mb],
+    cloud: [toOkta(realTimeData.current.cloud)], 
+    temp_c: [realTimeData.current.temp_c],
+  };
+
+  const dfCurrent = new DataFrame(weatherData);
+
+  return dfCurrent;
+}
+
+//const response = await runInference(inputFeatures)
+//const weatherinfo = await fetchForecastWeather()
+
+//const forecastweather = await fetchWeatherInfo()
+
+
+function createLatLngList(routes: google.maps.DirectionsRoute[]) {
+
+  var legs = routes[0].legs
+  var startLatLngPair;
+  var stopLatLngPair;
+  var endLatLngPair;
+
+  for (let i = 0; i < legs.length; i++) {
+    if (i == 0) {
+      var startLocLat = legs[i].start_location.lat(); 
+      var startLocLng = legs[i].start_location.lng();
+      var stopLocLat = legs[i].end_location.lat();
+      var stopLocLng = legs[i].end_location.lng();
+    
+      startLatLngPair = [startLocLat, startLocLng];
+      stopLatLngPair = [stopLocLat, stopLocLng];
+    } else {
+      var endLocLat = legs[i].end_location.lat();
+      var endLocLng = legs[i].end_location.lng();
+      endLatLngPair = [endLocLat, endLocLng];
+    }
+  }
+  var allLatLng = [startLatLngPair, stopLatLngPair, endLatLngPair].filter(Boolean);
+  return allLatLng;
+}
+
+
