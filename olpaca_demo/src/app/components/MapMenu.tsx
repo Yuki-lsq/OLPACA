@@ -3,12 +3,13 @@ import React, { useRef, useState } from "react";
 
 const FilterMenu: React.FC<{
   onApply: (
+    origin: string,
     destination: string,
     departDateTime: string,
     avoidOptions: string[],
   ) => void;
 }> = ({ onApply }) => {
-  const [location, setLocation] = useState("");
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [departDate, setDepartDate] = useState("Now");
   const [departTime, setDepartTime] = useState("Now");
@@ -19,11 +20,11 @@ const FilterMenu: React.FC<{
       departDate === "Now"
         ? "Now"
         : `${departDate} ${departTime === "Now" ? "00:00" : departTime}`;
-    onApply(destination, departDateTime, avoidOptions);
+    onApply(origin, destination, departDateTime, avoidOptions);
   };
 
   const handleLocChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setLocation(event.target.value);
+    setOrigin(event.target.value);
   };
 
   const handleDestChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -42,7 +43,7 @@ const FilterMenu: React.FC<{
         <textarea
           id="location"
           className="border border-primary text-sm rounded-lg p-2 resize-none h-10"
-          value={location}
+          value={origin}
           onChange={handleLocChange}
           placeholder="Enter Current Location"
         />
