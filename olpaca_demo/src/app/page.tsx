@@ -6,8 +6,9 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { PromptTemplate } from "langchain/prompts";
 import { RunnableSequence } from "langchain/schema/runnable";
 
-import { fetchNewTemperature } from "./api/WeatherData";
+import { fetchWeatherInfo, fetchForecastWeather } from "./api/WeatherData";
 import { templateBuilder, llmCommand, parser } from "./utils/llm";
+import { runInference } from "./utils/sagemaker";
 import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
@@ -17,6 +18,8 @@ export default function Home() {
   const [inputHeight, setHeight] = useState("");
   const [inputWeight, setWeight] = useState("");
   const [inputExerciseFreq, setExerciseFreq] = useState("");
+  const [predictedTemperatures, setPredictedTemperatures] = useState<string[]>("");
+
   const temporary_lat = "-37.804874";
   const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
@@ -27,6 +30,69 @@ export default function Home() {
     apiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
     version: "weekly",
   });
+
+  const handlePredictions = async () => {
+    const weatherData = await fetchWeatherInfo(temporary_lat, temporary_long);
+    const {
+      mintemp_c,
+      maxtemp_c,
+      precip_mm,
+      sunshine,
+      gust_kph,
+      daily_will_it_rain,
+      tom_will_it_rain,
+      wind_kph,
+      humidity,
+      pressure_md,
+      cloud,
+      temp_c,
+    } = weatherData.current;
+    const inputFeatures : {
+      sex: string;
+      age: number;
+      height: number;
+      weight: number;
+      freqOfExercise: number;
+      PersonID: string;
+      mintemp_c: number;
+      maxtemp_c: number;
+      precip_mm: number;
+      sunshine: number;
+      gust_kph: number;
+      daily_will_it_rain: string;
+      tom_will_it_rain: string;
+      wind_kph: number;
+      humidity: number;
+      pressure_md: number;
+      cloud: number;
+      temp_c: number;
+    } = {
+        sex: String(inputSex),
+        age: Number(inputAge),
+        height: Number(inputHeight),
+        weight: Number(inputWeight),
+        freqOfExercise: Number(inputExerciseFreq),
+        PersonID: "1",
+        mintemp_c: Number(mintemp_c),
+        maxtemp_c: Number(maxtemp_c),
+        precip_mm: Number(precip_mm),
+        sunshine: Number(sunshine),
+        gust_kph: Number(gust_kph),
+        daily_will_it_rain: String(daily_will_it_rain),
+        tom_will_it_rain: String(tom_will_it_rain),
+        wind_kph: Number(wind_kph),
+        humidity: Number(humidity),
+        pressure_md: Number(pressure_md),
+        cloud: Number(cloud),
+        temp_c: Number(temp_c),
+      };
+    try {
+      const response = await runInference(inputFeatures);
+      console.log("Prediction Result:", response);
+    } catch (error) {
+      console.error("Error getting prediction:", error);
+    };
+  };
 
   const handleSexChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSex(event.target.value);
@@ -123,7 +189,7 @@ export default function Home() {
   };
 
   const handleGetWeatherData = () => {
-    fetchNewTemperature("-37.804874", "144.96259");
+    fetchWeatherInfo("-37.804874", "144.96259");
   };
 
   const handleGenerateOutput = async () => {
@@ -337,19 +403,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/*
         <div
           className="animate-in flex flex-row justify-center mt-4"
           style={{ "--index": 4 } as React.CSSProperties}
         >
           <button
             className="mt-4 bg-secondary hover:bg-tertiary font-bold py-2 px-4 border border-primary rounded"
-            onClick={handleGetWeatherData}
+            onClick={handlePredictions}
           >
-            Get Weather Data
+            Get Predictions
           </button>
         </div>
-        */}
       </main>
     </div>
   );
