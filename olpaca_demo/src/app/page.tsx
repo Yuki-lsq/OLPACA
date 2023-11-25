@@ -18,10 +18,10 @@ export default function Home() {
   const [inputHeight, setHeight] = useState("");
   const [inputWeight, setWeight] = useState("");
   const [inputExerciseFreq, setExerciseFreq] = useState("");
-  const [predictedTemperatures, setPredictedTemperatures] = useState<string[]>("");
+  const [predictedTemperatures, setPredictedTemperatures] = useState<string[]>();
 
-  const temporary_lat = "-37.804874";
-  const temporary_long = "144.96259";
+  // const temporary_lat = "-37.804874";
+  // const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
   const [selectedMode, setSelectedMode] = useState("");
 
@@ -32,66 +32,72 @@ export default function Home() {
   });
 
   const handlePredictions = async () => {
-    const weatherData = await fetchWeatherInfo(temporary_lat, temporary_long);
-    const {
-      mintemp_c,
-      maxtemp_c,
-      precip_mm,
-      sunshine,
-      gust_kph,
-      daily_will_it_rain,
-      tom_will_it_rain,
-      wind_kph,
-      humidity,
-      pressure_md,
-      cloud,
-      temp_c,
-    } = weatherData.current;
-    const inputFeatures : {
-      sex: string;
-      age: number;
-      height: number;
-      weight: number;
-      freqOfExercise: number;
-      PersonID: string;
-      mintemp_c: number;
-      maxtemp_c: number;
-      precip_mm: number;
-      sunshine: number;
-      gust_kph: number;
-      daily_will_it_rain: string;
-      tom_will_it_rain: string;
-      wind_kph: number;
-      humidity: number;
-      pressure_md: number;
-      cloud: number;
-      temp_c: number;
-    } = {
-        sex: String(inputSex),
-        age: Number(inputAge),
-        height: Number(inputHeight),
-        weight: Number(inputWeight),
-        freqOfExercise: Number(inputExerciseFreq),
-        PersonID: "1",
-        mintemp_c: Number(mintemp_c),
-        maxtemp_c: Number(maxtemp_c),
-        precip_mm: Number(precip_mm),
-        sunshine: Number(sunshine),
-        gust_kph: Number(gust_kph),
-        daily_will_it_rain: String(daily_will_it_rain),
-        tom_will_it_rain: String(tom_will_it_rain),
-        wind_kph: Number(wind_kph),
-        humidity: Number(humidity),
-        pressure_md: Number(pressure_md),
-        cloud: Number(cloud),
-        temp_c: Number(temp_c),
+    console.log(locationTimeMap)
+    for (const info of locationTimeMap.keys()) {
+      console.log(info)
+      const weatherData = await fetchForecastWeather(info);
+      console.log(weatherData)
+      const {
+        mintemp_c,
+        maxtemp_c,
+        precip_mm,
+        sunshine,
+        gust_kph,
+        daily_will_it_rain,
+        tom_will_it_rain,
+        wind_kph,
+        humidity,
+        pressure_md,
+        cloud,
+        temp_c,
+      } = weatherData.current;
+      const inputFeatures : {
+        sex: string;
+        age: number;
+        height: number;
+        weight: number;
+        freqOfExercise: number;
+        PersonID: string;
+        mintemp_c: number;
+        maxtemp_c: number;
+        precip_mm: number;
+        sunshine: number;
+        gust_kph: number;
+        daily_will_it_rain: string;
+        tom_will_it_rain: string;
+        wind_kph: number;
+        humidity: number;
+        pressure_md: number;
+        cloud: number;
+        temp_c: number;
+      } = {
+          sex: String(inputSex),
+          age: Number(inputAge),
+          height: Number(inputHeight),
+          weight: Number(inputWeight),
+          freqOfExercise: Number(inputExerciseFreq),
+          PersonID: "1",
+          mintemp_c: Number(mintemp_c),
+          maxtemp_c: Number(maxtemp_c),
+          precip_mm: Number(precip_mm),
+          sunshine: Number(sunshine),
+          gust_kph: Number(gust_kph),
+          daily_will_it_rain: String(daily_will_it_rain),
+          tom_will_it_rain: String(tom_will_it_rain),
+          wind_kph: Number(wind_kph),
+          humidity: Number(humidity),
+          pressure_md: Number(pressure_md),
+          cloud: Number(cloud),
+          temp_c: Number(temp_c),
+        };
+      try {
+        const response = await runInference(inputFeatures);
+        console.log("Prediction Result:", response);
+      } catch (error) {
+        console.error("Error getting prediction:", error);
       };
-    try {
-      const response = await runInference(inputFeatures);
-      console.log("Prediction Result:", response);
-    } catch (error) {
-      console.error("Error getting prediction:", error);
-    };
+    }
+    
   };
 
   const handleSexChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -116,7 +122,7 @@ export default function Home() {
     setExerciseFreq(event.target.value);
   };
 
-  var estimatedTimes;
+  var locationTimeMap = new Map<string, Date>();
   const handleApplyFilters = (
     origin: string,
     destination: string,
@@ -180,8 +186,8 @@ export default function Home() {
           console.log(response)
           routeMap.setDirections(response);
           if (response?.routes != null) {
-            estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
-            console.log(estimatedTimes)
+            locationTimeMap = calculateEstimatedTime(response?.routes, departDateTime)
+            console.log(locationTimeMap)
           }
         }
       });
@@ -419,19 +425,20 @@ export default function Home() {
   );
 }
 
-async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
+function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
 
   var chosenDate = Date.parse(departDateTime)
-  var estimatedTimes = new Array<Date>;
+  var estimatedTimes = new Map<string, Date>()
 
   var legs = routes[0].legs
   var currentTime = chosenDate
   for(let i = 0; i < legs.length; i++) {
     if (legs[i].duration != null) {
+      var endLocation = legs[i].end_address
       var mins = legs[i].duration?.value
       if (mins != undefined) {
         currentTime = currentTime + ( mins * 1000 )
-        estimatedTimes.push(new Date(currentTime))
+        estimatedTimes.set(endLocation, new Date(currentTime))
       }
     }
   }

@@ -21,12 +21,12 @@ export const fetchWeatherInfo = async (latitude: string, longitude: string) => {
   }
 }
 
-export const fetchForecastWeather = async (latitude: string, longitude: string) => {
+export const fetchForecastWeather = async (location: string) => {
   const options = {
     method: 'GET',
     url: 'https://weatherapi-com.p.rapidapi.com/forecast.json',
     params: {
-      q: `${latitude},${longitude}`, 
+      q: location, 
       days: '3'
     },
     headers: {
@@ -37,9 +37,9 @@ export const fetchForecastWeather = async (latitude: string, longitude: string) 
 
   try {
     const response = await axios.request(options);
-    const data = JSON.parse(response.data);
-    console.log(data);
-    return data
+    const { current, forecast, location } = response.data
+    console.log(forecast);
+    return forecast
   } catch(error) {
     console.error(error);
   }
