@@ -128,6 +128,7 @@ export default function Home() {
     destination: string,
     stops: string[],
     mode: string,
+    isDepartNow: boolean,
     departDateTime: string,
     avoidOptions: string[],
   ) => {
