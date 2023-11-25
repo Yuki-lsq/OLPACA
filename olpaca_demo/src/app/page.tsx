@@ -47,43 +47,47 @@ export default function Home() {
       temp_c,
     } = weatherData.current;
     const inputFeatures : {
-      sex: string;
-      age: number;
-      height: number;
-      weight: number;
-      freqOfExercise: number;
-      PersonID: string;
       mintemp_c: number;
       maxtemp_c: number;
       precip_mm: number;
       sunshine: number;
       gust_kph: number;
-      daily_will_it_rain: string;
-      tom_will_it_rain: string;
+      daily_will_it_rain: number;
+      tom_will_it_rain: number;
       wind_kph: number;
       humidity: number;
       pressure_md: number;
       cloud: number;
       temp_c: number;
+      PersonID: number;
+      sex: number;
+      age: number;
+      height: number;
+      weight: number;
+      BMI: number;
+      freqOfExercise: number;
+      CI: number;
     } = {
-        sex: String(inputSex),
+        mintemp_c: Number(17),
+        maxtemp_c: Number(20),
+        precip_mm: Number(precip_mm),
+        sunshine: Number(12.3),
+        gust_kph: Number(gust_kph),
+        daily_will_it_rain: Number(0),
+        tom_will_it_rain: Number(0),
+        wind_kph: Number(wind_kph),
+        humidity: Number(humidity),
+        pressure_md: Number(1006.3),
+        cloud: Number(cloud),
+        temp_c: Number(temp_c),
+        PersonID: 1,
+        sex: Number(inputSex),
         age: Number(inputAge),
         height: Number(inputHeight),
         weight: Number(inputWeight),
+        BMI: Number(28.39),
         freqOfExercise: Number(inputExerciseFreq),
-        PersonID: "1",
-        mintemp_c: Number(mintemp_c),
-        maxtemp_c: Number(maxtemp_c),
-        precip_mm: Number(precip_mm),
-        sunshine: Number(sunshine),
-        gust_kph: Number(gust_kph),
-        daily_will_it_rain: String(daily_will_it_rain),
-        tom_will_it_rain: String(tom_will_it_rain),
-        wind_kph: Number(wind_kph),
-        humidity: Number(humidity),
-        pressure_md: Number(pressure_md),
-        cloud: Number(cloud),
-        temp_c: Number(temp_c),
+        CI: Number(2.30714363),
       };
     try {
       const response = await runInference(inputFeatures);
