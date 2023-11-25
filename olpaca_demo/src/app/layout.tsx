@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <div
           className={
-            "mx-auto max-w-[1000px] px-6 pb-8 pt-12 md:px-6 md:pb-12 md:pt-16 bg-primary text-primary"
+            "mx-auto max-w-[1000px] px-6 pb-8 pt-8 md:px-6 md:pb-12 md:pt-12 bg-primary text-primary"
           }
         >
           {children}
