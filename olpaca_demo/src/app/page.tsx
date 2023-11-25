@@ -4,17 +4,14 @@ import { useChat } from "ai/react";
 import Head from "next/head";
 import { Loader } from "@googlemaps/js-api-loader";
 import { PromptTemplate } from "langchain/prompts";
-import { StructuredOutputParser } from "langchain/output_parsers";
 import { RunnableSequence } from "langchain/schema/runnable";
 
-import getWeatherProps from "./api/WeatherData";
+import { fetchNewTemperature } from "./api/WeatherData";
 import { templateBuilder, llmCommand, parser } from "./utils/llm";
-import apiJS from "./js/api.js";
-// import FilterMenu from "./components/MapMenu";
+import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
   const [inputTemp, setTemp] = useState("");
-  const [inputFit, setFit] = useState("");
   const [inputLat, setLat] = useState("");
   const [inputLong, setLong] = useState("");
   const [outputText, setOutputText] = useState("");
@@ -23,6 +20,9 @@ export default function Home() {
   const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
     [],
   );
+  const temporary_lat = "-37.804874";
+  const temporary_long = "144.96259";
+  const [temperatures, setTemperatures] = useState<string[]>([]);
 
   // @ts-ignore google.maps.plugins
   const loader = new Loader({
@@ -63,7 +63,7 @@ export default function Home() {
   };
 
   const handleGetWeatherData = () => {
-    getWeatherProps("-37.804874", "144.96259");
+    fetchNewTemperature("-37.804874", "144.96259");
   };
 
   const handleGenerateOutput = async () => {
@@ -73,10 +73,6 @@ export default function Home() {
         "Docklands, Melbourne",
       ];
       const temperatures = ["29", "29"];
-      // const outputParser = StructuredOutputParser.fromNamesAndDescriptions({
-      //   weatherSummary: "summary of weather",
-      //   clothesRecommendation: "clothes recommendation for the human based on weather",
-      // });
 
       const locationDict: Record<string, string> = {};
       const temperatureDict: Record<string, string> = {};
@@ -103,7 +99,9 @@ export default function Home() {
         format_instructions: parser.getFormatInstructions(),
       });
 
-      // setOutputText(response);
+      const { weatherSummary, clothesRecommendation } = response;
+      const outputText = `Weather Summary: ${weatherSummary}\n\nClothes Recommendation: ${clothesRecommendation}`;
+      setOutputText(outputText);
       console.log(typeof response);
     } catch (error) {
       console.log(error);
@@ -193,7 +191,7 @@ export default function Home() {
             id="map"
             
           ></div>
-          {/*<FilterMenu onApply={handleApplyFilters} />*/}
+          <FilterMenu onApply={handleApplyFilters} />
           <p>Text output preview:</p>
           <p>Selected Destination: {selectedDestination}</p>
           <p>Selected Departure: {selectedDepartDateTime}</p>
@@ -201,67 +199,10 @@ export default function Home() {
         </div>
 
         <div
-          className="animate-in flex flex-col md:flex-row md:divide-x mt-8"
+          className="animate-in flex flex-col md:flex-row mt-8"
           style={{ "--index": 3 } as React.CSSProperties}
         >
-          <div className="flex flex-col px-8 w-[500px] gap-y-4">
-            <div className="container flex flex-col mx-auto mb-4">
-              <label
-                htmlFor="temperature"
-                className="text-lg font-semibold mb-2"
-              >
-                Temperature
-              </label>
-              <textarea
-                id="temperature"
-                className="border border-primary rounded-lg p-2 h-11 resize-none"
-                value={inputTemp}
-                onChange={handleTemperatureChange}
-                placeholder="Enter temperature here..."
-              />
-            </div>
-
-            <div className="container flex flex-col mx-auto mb-4">
-              <label htmlFor="fit" className="text-lg font-semibold mb-2">
-                Fit
-              </label>
-              <textarea
-                id="fit"
-                className="border border-primary rounded-lg p-2 h-11 resize-none"
-                value={inputFit}
-                onChange={handleFitChange}
-                placeholder="Enter what you're wearing here..."
-              />
-            </div>
-
-            <div className="container flex flex-col mx-auto mb-4">
-              <label htmlFor="latitude" className="text-lg font-semibold mb-2">
-                Latitude
-              </label>
-              <textarea
-                id="latitude"
-                className="border border-primary rounded-lg p-2 h-11 resize-none"
-                value={inputLat}
-                onChange={handleLatChange}
-                placeholder="Enter latitude"
-              />
-            </div>
-
-            <div className="container flex flex-col mx-auto mb-4">
-              <label htmlFor="longitude" className="text-lg font-semibold mb-2">
-                Longitude
-              </label>
-              <textarea
-                id="longitude"
-                className="border border-primary rounded-lg p-2 h-11 resize-none"
-                value={inputLong}
-                onChange={handleLongChange}
-                placeholder="Enter longitude"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col px-8 w-[500px] container">
+          <div className="flex flex-col w-full container">
             <label
               htmlFor="recommendations"
               className="text-lg font-semibold mb-2"
@@ -270,7 +211,7 @@ export default function Home() {
             </label>
             <textarea
               id="recommendations"
-              className="border border-primary rounded-lg p-2 h-36 resize-none"
+              className="border border-primary rounded-lg p-2 h-full resize-none"
               value={outputText}
               placeholder="Output will be generated here..."
               readOnly
@@ -294,7 +235,6 @@ export default function Home() {
           >
             Get Weather Data
           </button>
-
         </div>
 
         {/*
@@ -324,7 +264,6 @@ export default function Home() {
           </form>
         </div>
         */}
-
       </main>
     </div>
   );
