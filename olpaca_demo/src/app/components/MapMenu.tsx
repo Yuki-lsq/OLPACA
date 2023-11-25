@@ -7,6 +7,7 @@ const FilterMenu: React.FC<{
     destination: string,
     stops: string[],
     mode: string,
+    isDepartNow: boolean,
     departDateTime: string,
     avoidOptions: string[],
   ) => void;
@@ -16,6 +17,7 @@ const FilterMenu: React.FC<{
   const [showStops, setShowStops] = useState(false);
   const [stops, setStops] = useState<string[]>([]);
   const [mode, setMode] = useState("");
+  const [isDepartNow, setIsDepartNow] = useState(true);
   const [departDate, setDepartDate] = useState("Now");
   const [departTime, setDepartTime] = useState("Now");
   const [avoidOptions, setAvoidOptions] = useState<string[]>([]);
@@ -25,7 +27,8 @@ const FilterMenu: React.FC<{
       departDate === "Now"
         ? "Now"
         : `${departDate} ${departTime === "Now" ? "00:00" : departTime}`;
-    onApply(origin, destination, stops, mode, departDateTime, avoidOptions);
+    departDateTime == "Now" ? setIsDepartNow(true) : setIsDepartNow(false);
+    onApply(origin, destination, stops, mode, isDepartNow, departDateTime, avoidOptions);
   };
 
   const handleLocChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

@@ -18,11 +18,13 @@ export default function Home() {
   const [inputHeight, setHeight] = useState("");
   const [inputWeight, setWeight] = useState("");
   const [inputExerciseFreq, setExerciseFreq] = useState("");
-  const [predictedTemperatures, setPredictedTemperatures] = useState<string[]>("");
+  const [predictedTemperatures, setPredictedTemperatures] =
+    useState<string[]>();
 
-  const temporary_lat = "-37.804874";
-  const temporary_long = "144.96259";
+  // const temporary_lat = "-37.804874";
+  // const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
+  const [selectedMode, setSelectedMode] = useState("");
 
   // @ts-ignore google.maps.plugins
   const loader = new Loader({
@@ -31,43 +33,47 @@ export default function Home() {
   });
 
   const handlePredictions = async () => {
-    const weatherData = await fetchWeatherInfo(temporary_lat, temporary_long);
-    const {
-      mintemp_c,
-      maxtemp_c,
-      precip_mm,
-      sunshine,
-      gust_kph,
-      daily_will_it_rain,
-      tom_will_it_rain,
-      wind_kph,
-      humidity,
-      pressure_md,
-      cloud,
-      temp_c,
-    } = weatherData.current;
-    const inputFeatures : {
-      mintemp_c: number;
-      maxtemp_c: number;
-      precip_mm: number;
-      sunshine: number;
-      gust_kph: number;
-      daily_will_it_rain: number;
-      tom_will_it_rain: number;
-      wind_kph: number;
-      humidity: number;
-      pressure_md: number;
-      cloud: number;
-      temp_c: number;
-      PersonID: number;
-      sex: number;
-      age: number;
-      height: number;
-      weight: number;
-      BMI: number;
-      freqOfExercise: number;
-      CI: number;
-    } = {
+    console.log(locationTimeMap);
+    for (const info of locationTimeMap.keys()) {
+      console.log(info);
+      const weatherData = await fetchForecastWeather(info);
+      console.log(weatherData);
+      const {
+        mintemp_c,
+        maxtemp_c,
+        precip_mm,
+        sunshine,
+        gust_kph,
+        daily_will_it_rain,
+        tom_will_it_rain,
+        wind_kph,
+        humidity,
+        pressure_md,
+        cloud,
+        temp_c,
+      } = weatherData.current;
+      const inputFeatures: {
+        mintemp_c: number;
+        maxtemp_c: number;
+        precip_mm: number;
+        sunshine: number;
+        gust_kph: number;
+        daily_will_it_rain: number;
+        tom_will_it_rain: number;
+        wind_kph: number;
+        humidity: number;
+        pressure_md: number;
+        cloud: number;
+        temp_c: number;
+        PersonID: number;
+        sex: number;
+        age: number;
+        height: number;
+        weight: number;
+        BMI: number;
+        freqOfExercise: number;
+        CI: number;
+      } = {
         mintemp_c: Number(17),
         maxtemp_c: Number(20),
         precip_mm: Number(precip_mm),
@@ -89,12 +95,13 @@ export default function Home() {
         freqOfExercise: Number(inputExerciseFreq),
         CI: Number(2.30714363),
       };
-    try {
-      const response = await runInference(inputFeatures);
-      console.log("Prediction Result:", response);
-    } catch (error) {
-      console.error("Error getting prediction:", error);
-    };
+      try {
+        const response = await runInference(inputFeatures);
+        console.log("Prediction Result:", response);
+      } catch (error) {
+        console.error("Error getting prediction:", error);
+      }
+    }
   };
 
   const handleSexChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -119,16 +126,18 @@ export default function Home() {
     setExerciseFreq(event.target.value);
   };
 
-  var estimatedTimes;
+  var locationTimeMap = new Map<string, Date>();
   const handleApplyFilters = (
     origin: string,
     destination: string,
     stops: string[],
     mode: string,
+    isDepartNow: boolean,
     departDateTime: string,
     avoidOptions: string[],
   ) => {
     // update map data
+    setSelectedMode(mode);
     loader.load().then(async () => {
       const { Map } = (await google.maps.importLibrary(
         "maps",
@@ -149,40 +158,45 @@ export default function Home() {
       for (let i = 0; i < stops.length; i++) {
         waypts.push({
           location: stops[i],
-          stopover: true
+          stopover: true,
         });
       }
       var travelMode;
-      switch(mode) {
+      switch (mode) {
         case "WALKING":
-          travelMode = google.maps.TravelMode.WALKING
+          travelMode = google.maps.TravelMode.WALKING;
           break;
         case "DRIVING":
-          travelMode = google.maps.TravelMode.DRIVING
+          travelMode = google.maps.TravelMode.DRIVING;
           break;
         case "BICYCLING":
-          travelMode = google.maps.TravelMode.BICYCLING
+          travelMode = google.maps.TravelMode.BICYCLING;
           break;
         case "TRANSIT":
-          travelMode = google.maps.TravelMode.TRANSIT
+          travelMode = google.maps.TravelMode.TRANSIT;
           break;
         default:
-          travelMode = google.maps.TravelMode.DRIVING
+          travelMode = google.maps.TravelMode.DRIVING;
       }
 
       var mapsRequest = {
         origin: origin,
         destination: destination,
         waypoints: waypts,
-        travelMode: travelMode
+        travelMode: travelMode,
       };
 
       await directions.route(mapsRequest, function (response, status) {
         if (status == "OK") {
+          console.log(response);
           routeMap.setDirections(response);
-          // if (response?.routes != null) {
-          //   estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
-          // }
+          if (response?.routes != null) {
+            locationTimeMap = calculateEstimatedTime(
+              response?.routes,
+              departDateTime,
+            );
+            console.log(locationTimeMap);
+          }
         }
       });
     });
@@ -224,9 +238,9 @@ export default function Home() {
         ...windDict,
         ...ifRainDict,
         style: "casual",
-        mode: selectedMode, 
+        mode: selectedMode,
         sex: "female",
-        age: "20"
+        age: "20",
       };
       const template = templateBuilder(locations.length);
 
@@ -292,7 +306,14 @@ export default function Home() {
           className="animate-in text-sm font-normal lg:text-md"
           style={{ "--index": 2 } as React.CSSProperties}
         >
-          Step into style with Wearther, your ultimate travel companion n the world of fashion. Unleash the power of personalised outift recommendations based on real-time weather conditions and your unique preferences. Beyond just forecasting the weather, Wearther curates the perfect wardrobe for your journey, ensuring you stay comfortable and chic no matter where your adventures take you. Seamlessly blending fashion and functionality, this innovative app transforms your daily clothing decisions into a delight experience.
+          Step into style with Wearther, your ultimate travel companion n the
+          world of fashion. Unleash the power of personalised outift
+          recommendations based on real-time weather conditions and your unique
+          preferences. Beyond just forecasting the weather, Wearther curates the
+          perfect wardrobe for your journey, ensuring you stay comfortable and
+          chic no matter where your adventures take you. Seamlessly blending
+          fashion and functionality, this innovative app transforms your daily
+          clothing decisions into a delight experience.
         </p>
         <hr className="h-px my-4 bg-secondary border-0" />
         <div className="flex flex-row w-full">
@@ -419,13 +440,25 @@ export default function Home() {
   );
 }
 
-// async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
+function calculateEstimatedTime(
+  routes: google.maps.DirectionsRoute[],
+  departDateTime: string,
+) {
+  var chosenDate = Date.parse(departDateTime);
+  var estimatedTimes = new Map<string, Date>();
 
-//   var estimatedTimes;
+  var legs = routes[0].legs;
+  var currentTime = chosenDate;
+  for (let i = 0; i < legs.length; i++) {
+    if (legs[i].duration != null) {
+      var endLocation = legs[i].end_address;
+      var mins = legs[i].duration?.value;
+      if (mins != undefined) {
+        currentTime = currentTime + mins * 1000;
+        estimatedTimes.set(endLocation, new Date(currentTime));
+      }
+    }
+  }
 
-//   for(let i = 0; i < routes.length; i++) {
-
-//   }
-
-//   return estimatedTimes;
-// }
+  return estimatedTimes;
+}
