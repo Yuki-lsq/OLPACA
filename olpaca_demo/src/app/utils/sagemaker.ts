@@ -59,20 +59,29 @@ export const runInference = async (data) => {
   // const csvData = json2csv({ data:data, fields:fields, fieldNames:fieldNames });
   const parser = new Parser();
   const csv = parser.parse(data);
+
   //const headers = Object.keys(sonData.data[0]).toString();
   // const main = jsonData.data.map((item) => {
   //   return Object.values(item).toString();
   // });
   // const csv = [headers, ...main].join("\n");
+  
 
+  var vals = new Array<Number>();
+  var string = "17,20,0.14,12.3,18,0,0,12.2,93,1006.3,100,15.4,1,0,20,175,28,28.39,6,2.30714363".split(",")
+  for (var i = 0; i < string.length; i++) {
+    vals.push(string[i])
+  }
+
+  
   const params = {
-    Body: csv,
+    Body: vals,
     EndpointName: endpointName,
     ContentType: "text/csv",
   };
 
   try {
-    console.log(typeof csv);
+    console.log(vals);
     const response = await runtime.invokeEndpoint(params);
     const result = response.Body.toString();
     // console.log("Prediction Result:", result);

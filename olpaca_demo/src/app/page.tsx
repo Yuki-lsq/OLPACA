@@ -37,7 +37,6 @@ export default function Home() {
     for (const info of locationTimeMap.keys()) {
       console.log(info);
       const weatherData = await fetchForecastWeather(info);
-      console.log(weatherData);
       const {
         mintemp_c,
         maxtemp_c,
@@ -96,6 +95,7 @@ export default function Home() {
         CI: Number(2.30714363),
       };
       try {
+        console.log(weatherData.current);
         const response = await runInference(inputFeatures);
         console.log("Prediction Result:", response);
       } catch (error) {

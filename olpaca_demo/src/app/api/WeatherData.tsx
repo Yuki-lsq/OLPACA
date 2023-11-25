@@ -37,9 +37,9 @@ export const fetchForecastWeather = async (location: string) => {
 
   try {
     const response = await axios.request(options);
-    const { current, forecast, location } = response.data
-    console.log(forecast);
-    return forecast
+    //const { current, forecast, location } = response.data
+    //console.log(forecast);
+    return response.data;
   } catch(error) {
     console.error(error);
   }
