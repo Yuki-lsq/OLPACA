@@ -13,12 +13,6 @@ import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
   const [outputText, setOutputText] = useState("");
-  const [selectedOrigin, setSelectedOrigin] = useState("");
-  const [selectedDestination, setSelectedDestination] = useState("");
-  const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
-  const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
-    [],
-  );
   const [inputSex, setSex] = useState("");
   const [inputAge, setAge] = useState("");
   const [inputHeight, setHeight] = useState("");
@@ -121,16 +115,15 @@ export default function Home() {
     setExerciseFreq(event.target.value);
   };
 
+  var estimatedTimes;
   const handleApplyFilters = (
     origin: string,
     destination: string,
+    stops: string[],
+    mode: string,
     departDateTime: string,
     avoidOptions: string[],
   ) => {
-    setSelectedOrigin(origin);
-    setSelectedDestination(destination);
-    setSelectedDepartDateTime(departDateTime);
-    setSelectedAvoidOptions(avoidOptions);
     // update map data
     loader.load().then(async () => {
       const { Map } = (await google.maps.importLibrary(
@@ -148,15 +141,44 @@ export default function Home() {
       map = new Map(document.getElementById("map") as HTMLElement);
       routeMap.setMap(map);
 
+      const waypts: google.maps.DirectionsWaypoint[] = [];
+      for (let i = 0; i < stops.length; i++) {
+        waypts.push({
+          location: stops[i],
+          stopover: true
+        });
+      }
+      var travelMode;
+      switch(mode) {
+        case "WALKING":
+          travelMode = google.maps.TravelMode.WALKING
+          break;
+        case "DRIVING":
+          travelMode = google.maps.TravelMode.DRIVING
+          break;
+        case "BICYCLING":
+          travelMode = google.maps.TravelMode.BICYCLING
+          break;
+        case "TRANSIT":
+          travelMode = google.maps.TravelMode.TRANSIT
+          break;
+        default:
+          travelMode = google.maps.TravelMode.DRIVING
+      }
+
       var mapsRequest = {
         origin: origin,
         destination: destination,
-        travelMode: TravelMode.DRIVING,
+        waypoints: waypts,
+        travelMode: travelMode
       };
 
       await directions.route(mapsRequest, function (response, status) {
         if (status == "OK") {
           routeMap.setDirections(response);
+          // if (response?.routes != null) {
+          //   estimatedTimes = calculateEstimatedTime(response?.routes, departDateTime)
+          // }
         }
       });
     });
@@ -173,20 +195,34 @@ export default function Home() {
         "Docklands, Melbourne",
       ];
       const temperatures = ["29", "29"];
+      const windSpeeds = ["6", "15"];
+      const ifRain = ["0", "1"];
 
       const locationDict: Record<string, string> = {};
       const temperatureDict: Record<string, string> = {};
+      const windDict: Record<string, string> = {};
+      const ifRainDict: Record<string, string> = {};
       locations.forEach((location, index) => {
         locationDict[`location${index}`] = location;
       });
       temperatures.forEach((temperature, index) => {
         temperatureDict[`temperature${index}`] = temperature;
       });
+      windSpeeds.forEach((windSpeed, index) => {
+        windDict[`windSpeed${index}`] = windSpeed;
+      });
+      ifRain.forEach((ifRain, index) => {
+        ifRainDict[`ifRain${index}`] = ifRain;
+      });
       const inputValues: Record<string, string> = {
         ...locationDict,
         ...temperatureDict,
+        ...windDict,
+        ...ifRainDict,
         style: "casual",
+        mode: selectedMode, 
         sex: "female",
+        age: "20"
       };
       const template = templateBuilder(locations.length);
 
@@ -211,7 +247,6 @@ export default function Home() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   let map;
-  let routeMap;
   loader.load().then(async () => {
     const { Map } = (await google.maps.importLibrary(
       "maps",
@@ -222,25 +257,6 @@ export default function Home() {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
     });
-
-    // var directions = new DirectionsService();
-
-    // // Yuki's testing
-    // const origin = "New York, NY";
-    // const defaultDestination = "Los Angeles, CA";
-    // const mode = "driving";
-
-    // var mapsRequest = {
-    //   origin: origin,
-    //   destination: defaultDestination,
-    //   travelMode: TravelMode.DRIVING
-    // };
-
-    // directions.route(mapsRequest, function(response, status) {
-    //   if (status == 'OK') {
-    //     routeMap.setDirections(response);
-    //   }
-    // });
   });
 
   return (
@@ -283,7 +299,6 @@ export default function Home() {
           ></div>
           <FilterMenu onApply={handleApplyFilters} />
         </div>
-
         <div
           className="animate-in flex sm:flex-row flex-col justify-center mt-8 gap-y-2"
           style={{ "--index": 4 } as React.CSSProperties}
@@ -400,31 +415,13 @@ export default function Home() {
   );
 }
 
-async function calcRoute(
-  origin: string,
-  destination: string,
-  departDateTime: any,
-  avoidOptions: any,
-) {
-  const { DirectionsService, TravelMode, DirectionsRenderer } =
-    (await google.maps.importLibrary("routes")) as google.maps.RoutesLibrary;
+// async function calculateEstimatedTime(routes: google.maps.DirectionsRoute[], departDateTime: string) {
 
-  var directions = new DirectionsService();
-  var routeMap = new DirectionsRenderer();
+//   var estimatedTimes;
 
-  // Yuki's testing
-  var mapsRequest = {
-    origin: origin,
-    destination: destination,
-    travelMode: TravelMode.DRIVING,
-  };
+//   for(let i = 0; i < routes.length; i++) {
 
-  directions.route(mapsRequest, function (response, status) {
-    if (status == "OK") {
-      console.log(response);
-      return response;
-    }
-  });
+//   }
 
-  return null;
-}
+//   return estimatedTimes;
+// }

@@ -3,6 +3,8 @@ import { StructuredOutputParser } from "langchain/output_parsers";
 
 export const LOC = "location";
 export const TEMP = "temperature";
+export const WIND = "windSpeed";
+export const IF_RAIN = "ifRain";
 
 export const llmCommand = new Bedrock({
   model: "cohere.command-text-v14",
@@ -12,14 +14,14 @@ export const llmCommand = new Bedrock({
     secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
   },
   modelKwargs: {
-    max_tokens: 200,
+    max_tokens: 300,
   },
 });
 
 export const parser = StructuredOutputParser.fromNamesAndDescriptions({
-  weatherSummary: "summary of weather",
+  weatherSummary: "summary of weather (state the temperature) at each location taking into account that they are travelling between the destinations",
   clothesRecommendation:
-    "clothes recommendation for the human based on weather",
+    "clothing recommendation for the human based on weather summary by their mode of transport",
 });
 
 export const varNameBuilder = (name: string, numLocation: number): string => {
@@ -34,14 +36,19 @@ export const templateBuilder = (numData: number): string => {
   const humanRequestTitle = "\n\nHere is the human's request:\n\n";
 
   let inputTemplate = "";
+  inputTemplate += "Mode of transport: {mode}\n"
+  inputTemplate += "Style: {style}\n";
+  inputTemplate += "Sex: {sex}\n";
+  inputTemplate += "\nAge: {age}\n\n"
+
+
   for (let i = 0; i < numData; i++) {
     const locName = varNameBuilder(LOC, i);
     const tempName = varNameBuilder(TEMP, i);
-    inputTemplate += `${locName}: {${locName}}\n${tempName}: {${tempName}}\n`;
+    const windName = varNameBuilder(WIND, i);
+    const ifRainName = varNameBuilder(IF_RAIN, i);
+    inputTemplate += `${locName}: {${locName}}\n${tempName}: {${tempName}}\n ${windName}: {${windName}}\n${ifRainName}: {${ifRainName}}\n\n`;
   }
-
-  inputTemplate += "Style: {style}\n";
-  inputTemplate += "Sex: {sex}\n";
 
   const humanRequestEnder = "\n</human_reply>";
   const assistantStart = "\n\nAssistant:";
