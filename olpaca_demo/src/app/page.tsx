@@ -18,6 +18,12 @@ export default function Home() {
   const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
     [],
   );
+  const [inputSex, setSex] = useState("");
+  const [inputAge, setAge] = useState("");
+  const [inputHeight, setHeight] = useState("");
+  const [inputWeight, setWeight] = useState("");
+  const [inputExerciseFreq, setExerciseFreq] = useState("");
+
   const temporary_lat = "-37.804874";
   const temporary_long = "144.96259";
   const [temperatures, setTemperatures] = useState<string[]>([]);
@@ -27,6 +33,28 @@ export default function Home() {
     apiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
     version: "weekly",
   });
+
+  const handleSexChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSex(event.target.value);
+  };
+
+  const handleAgeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setAge(event.target.value);
+  };
+
+  const handleHeightChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setHeight(event.target.value);
+  };
+
+  const handleWeightChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setWeight(event.target.value);
+  };
+
+  const handleExerciseFreqChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setExerciseFreq(event.target.value);
+  };
 
   const handleApplyFilters = (
     origin: string,
@@ -43,26 +71,27 @@ export default function Home() {
       const { Map } = (await google.maps.importLibrary(
         "maps",
       )) as google.maps.MapsLibrary;
-  
-      const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
-        "routes",
-      )) as google.maps.RoutesLibrary;
+
+      const { DirectionsService, TravelMode, DirectionsRenderer } =
+        (await google.maps.importLibrary(
+          "routes",
+        )) as google.maps.RoutesLibrary;
 
       var directions = new DirectionsService();
       var routeMap = new DirectionsRenderer();
 
       map = new Map(document.getElementById("map") as HTMLElement);
-      routeMap.setMap(map)
+      routeMap.setMap(map);
 
       var mapsRequest = {
         origin: origin,
         destination: destination,
-        travelMode: TravelMode.DRIVING
+        travelMode: TravelMode.DRIVING,
       };
-    
-      await directions.route(mapsRequest, function(response, status) {
-        if (status == 'OK') {
-          routeMap.setDirections(response)
+
+      await directions.route(mapsRequest, function (response, status) {
+        if (status == "OK") {
+          routeMap.setDirections(response);
         }
       });
     });
@@ -130,18 +159,18 @@ export default function Home() {
     });
 
     // var directions = new DirectionsService();
-  
+
     // // Yuki's testing
     // const origin = "New York, NY";
     // const defaultDestination = "Los Angeles, CA";
     // const mode = "driving";
-  
+
     // var mapsRequest = {
     //   origin: origin,
     //   destination: defaultDestination,
     //   travelMode: TravelMode.DRIVING
     // };
-  
+
     // directions.route(mapsRequest, function(response, status) {
     //   if (status == 'OK') {
     //     routeMap.setDirections(response);
@@ -166,23 +195,21 @@ export default function Home() {
       </Head>
       <main>
         <h1
-          className="animate-in mb-4 text-xl font-extrabold md:text-2xl lg:text-3xl"
+          className="animate-in mb-4 text-2xl font-extrabold md:text-3xl lg:text-4xl"
           style={{ "--index": 1 } as React.CSSProperties}
         >
-          SmartWear Adviser: Your Personalised Weather Wardrobe Companion
+          <span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+            Wear
+          </span>
+          ther
         </h1>
         <p
           className="animate-in text-sm font-normal lg:text-md"
           style={{ "--index": 2 } as React.CSSProperties}
         >
-          (placeholder) Stay ahead of the weather with SmartWear Adviser, the
-          revolutionary generative AI app designed to make your daily clothing
-          choices a breeze. This intelligent application goes beyond generic
-          weather forecasts, taking into account your individual preferences,
-          daily activities, and metabolism to offer tailor-made clothing
-          recommendations.
+          Step into style with Wearther, your ultimate travel companion n the world of fashion. Unleash the power of personalised outift recommendations based on real-time weather conditions and your unique preferences. Beyond just forecasting the weather, Wearther curates the perfect wardrobe for your journey, ensuring you stay comfortable and chic no matter where your adventures take you. Seamlessly blending fashion and functionality, this innovative app transforms your daily clothing decisions into a delight experience.
         </p>
-        <hr className="h-px my-8 bg-secondary border-0" />
+        <hr className="h-px my-4 bg-secondary border-0" />
         <div className="flex flex-row w-full">
           <div
             className="animate-in flex flex-row justify-center w-full h-[500px]"
@@ -190,21 +217,86 @@ export default function Home() {
             id="map"
           ></div>
           <FilterMenu onApply={handleApplyFilters} />
-          <p>Text output preview:</p>
-          <p>Selected Origin: {selectedOrigin}</p>
-          <p>Selected Destination: {selectedDestination}</p>
-          <p>Selected Departure: {selectedDepartDateTime}</p>
-          <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
         </div>
-        <p>Selected Destination: {selectedDestination}</p>
-        <p>Selected Departure: {selectedDepartDateTime}</p>
-        <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
 
         <div
-          className="animate-in flex flex-col md:flex-row mt-8"
+          className="animate-in flex sm:flex-row flex-col justify-center mt-8 gap-y-2"
+          style={{ "--index": 4 } as React.CSSProperties}
+        >
+          <div className="container flex flex-col mx-auto h-[100px]">
+            <label htmlFor="sex" className="text-md font-semibold mb-2">
+              Sex
+            </label>
+            <textarea
+              id="sex"
+              className="border border-primary rounded-lg p-2 w-[150px] h-11 resize-none"
+              input={inputSex}
+              onChange={handleSexChange}
+              placeholder="Enter sex"
+            />
+          </div>
+
+          <div className="container flex flex-col mx-auto h-[100px]">
+            <label htmlFor="age" className="text-md font-semibold mb-2">
+              Age
+            </label>
+            <textarea
+              id="age"
+              className="border border-primary rounded-lg p-2 w-[150px] h-11 resize-none"
+              input={inputAge}
+              onChange={handleAgeChange}
+              placeholder="Enter age"
+            />
+          </div>
+
+          <div className="container flex flex-col mx-auto h-[100px]">
+            <label htmlFor="height" className="text-md font-semibold mb-2">
+              Height
+            </label>
+            <textarea
+              id="height"
+              className="border border-primary rounded-lg p-2 w-[150px] h-11 resize-none"
+              input={inputHeight}
+              onChange={handleHeightChange}
+              placeholder="Enter height"
+            />
+          </div>
+
+          <div className="container flex flex-col mx-auto h-[100px]">
+            <label htmlFor="weight" className="text-md font-semibold mb-2">
+              Weight
+            </label>
+            <textarea
+              id="age"
+              className="border border-primary rounded-lg p-2 w-[150px] h-11 resize-none"
+              input={inputWeight}
+              onChange={handleWeightChange}
+              placeholder="Enter weight"
+            />
+          </div>
+
+          <div className="container flex flex-col mx-auto h-[100px]">
+            <label
+              htmlFor="exerciseFreq"
+              className="text-md font-semibold mb-2"
+            >
+              Exercise Frequency
+            </label>
+            <textarea
+              id="exerciseFreq"
+              className="border border-primary rounded-lg p-2 w-[250px] h-11 resize-none"
+              input={inputExerciseFreq}
+              onChange={handleExerciseFreqChange}
+              placeholder="Enter exercise frequency"
+            />
+          </div>
+        </div>
+
+        <div
+          className="animate-in flex flex-col w-full xl:flex-row mt-2"
           style={{ "--index": 3 } as React.CSSProperties}
         >
-          <div className="flex flex-col w-full container">
+          <div className="flex flex-col w-full h-[300px] container">
             <label
               htmlFor="recommendations"
               className="text-lg font-semibold mb-2"
@@ -227,6 +319,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/*
         <div
           className="animate-in flex flex-row justify-center mt-4"
           style={{ "--index": 4 } as React.CSSProperties}
@@ -238,43 +331,20 @@ export default function Home() {
             Get Weather Data
           </button>
         </div>
-
-        {/*
-        <div className="mt-4 w-full py-24 flex flex-col border border-primary p-2 rounded-lg">
-          {messages.map((m) => (
-            <div key={m.id}>
-              {m.role === "user" ? "User: " : "AI: "}
-              {m.content}
-            </div>
-          ))}
-
-          <form className="flex flex-col" onSubmit={handleSubmit}>
-            <label>
-              Say something...
-              <input
-                className="w-full max-w-md bottom-0 border border-primary rounded mb-8 shadow-lg p-2"
-                value={input}
-                onChange={handleInputChange}
-              />
-            </label>
-            <button
-              className="border broder-primary shadow-lg p-2"
-              type="submit"
-            >
-              Send
-            </button>
-          </form>
-        </div>
         */}
       </main>
     </div>
   );
 }
 
-async function calcRoute(origin: string, destination: string, departDateTime: any, avoidOptions: any) {
-  const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
-    "routes",
-  )) as google.maps.RoutesLibrary;
+async function calcRoute(
+  origin: string,
+  destination: string,
+  departDateTime: any,
+  avoidOptions: any,
+) {
+  const { DirectionsService, TravelMode, DirectionsRenderer } =
+    (await google.maps.importLibrary("routes")) as google.maps.RoutesLibrary;
 
   var directions = new DirectionsService();
   var routeMap = new DirectionsRenderer();
@@ -283,14 +353,14 @@ async function calcRoute(origin: string, destination: string, departDateTime: an
   var mapsRequest = {
     origin: origin,
     destination: destination,
-    travelMode: TravelMode.DRIVING
+    travelMode: TravelMode.DRIVING,
   };
 
-  directions.route(mapsRequest, function(response, status) {
-    if (status == 'OK') {
-      return response
+  directions.route(mapsRequest, function (response, status) {
+    if (status == "OK") {
+      return response;
     }
   });
 
-  return null
+  return null;
 }
