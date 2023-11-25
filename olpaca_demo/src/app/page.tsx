@@ -9,6 +9,7 @@ import { RunnableSequence } from "langchain/schema/runnable";
 
 import getWeatherProps from "./api/WeatherData";
 import { templateBuilder, llmCommand, parser } from "./utils/llm";
+import apiJS from "./js/api.js";
 // import FilterMenu from "./components/MapMenu";
 
 export default function Home() {
@@ -23,6 +24,12 @@ export default function Home() {
     [],
   );
 
+  // @ts-ignore google.maps.plugins
+  const loader = new Loader({
+    apiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
+    version: "weekly",
+  });
+
   const handleApplyFilters = (
     destination: string,
     departDateTime: string,
@@ -32,6 +39,9 @@ export default function Home() {
     setSelectedDepartDateTime(departDateTime);
     setSelectedAvoidOptions(avoidOptions);
     // update map data
+    // loader.load().then(async () => {
+    //   routeMap = calcRoute(destination, departDateTime, avoidOptions)
+    // });
   };
 
   const handleTemperatureChange = (
@@ -102,28 +112,44 @@ export default function Home() {
 
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
-  // @ts-ignore google.maps.plugins
-  const loader = new Loader({
-    apiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
-    version: "weekly",
-  });
-
   let map;
+  let routeMap;
   loader.load().then(async () => {
     const { Map } = (await google.maps.importLibrary(
       "maps",
     )) as google.maps.MapsLibrary;
 
-    // Yuki's testing
-    const origin = "New York, NY";
-    const destination = "Los Angeles, CA";
-    const mode = "driving";
+    const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
+      "routes",
+    )) as google.maps.RoutesLibrary;
+
+    var routeMap = new DirectionsRenderer();
 
     // Function for running the google maps api
     map = new Map(document.getElementById("map") as HTMLElement, {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
     });
+    routeMap.setMap(map)
+
+    // var directions = new DirectionsService();
+  
+    // // Yuki's testing
+    // const origin = "New York, NY";
+    // const defaultDestination = "Los Angeles, CA";
+    // const mode = "driving";
+  
+    // var mapsRequest = {
+    //   origin: origin,
+    //   destination: defaultDestination,
+    //   travelMode: TravelMode.DRIVING
+    // };
+  
+    // directions.route(mapsRequest, function(response, status) {
+    //   if (status == 'OK') {
+    //     routeMap.setDirections(response);
+    //   }
+    // });
   });
 
   return (
@@ -165,6 +191,7 @@ export default function Home() {
             className="animate-in flex flex-row justify-center w-full h-[500px]"
             style={{ "--index": 3 } as React.CSSProperties}
             id="map"
+            
           ></div>
           {/*<FilterMenu onApply={handleApplyFilters} />*/}
           <p>Text output preview:</p>
@@ -301,4 +328,32 @@ export default function Home() {
       </main>
     </div>
   );
+}
+
+async function calcRoute(destination: string, departDateTime: any, avoidOptions: any) {
+  const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
+    "routes",
+  )) as google.maps.RoutesLibrary;
+
+  var directions = new DirectionsService();
+  var routeMap = new DirectionsRenderer();
+
+  // Yuki's testing
+  const origin = "New York, NY";
+  const defaultDestionation = "Los Angeles, CA";
+  const mode = "driving";
+
+  var mapsRequest = {
+    origin: origin,
+    destination: destination,
+    travelMode: TravelMode.DRIVING
+  };
+
+  directions.route(mapsRequest, function(response, status) {
+    if (status == 'OK') {
+      routeMap.setDirections(response);
+    }
+  });
+
+  return routeMap;
 }
