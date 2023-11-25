@@ -142,20 +142,34 @@ export default function Home() {
         "Docklands, Melbourne",
       ];
       const temperatures = ["29", "29"];
+      const windSpeeds = ["6", "15"];
+      const ifRain = ["0", "1"];
 
       const locationDict: Record<string, string> = {};
       const temperatureDict: Record<string, string> = {};
+      const windDict: Record<string, string> = {};
+      const ifRainDict: Record<string, string> = {};
       locations.forEach((location, index) => {
         locationDict[`location${index}`] = location;
       });
       temperatures.forEach((temperature, index) => {
         temperatureDict[`temperature${index}`] = temperature;
       });
+      windSpeeds.forEach((windSpeed, index) => {
+        windDict[`windSpeed${index}`] = windSpeed;
+      });
+      ifRain.forEach((ifRain, index) => {
+        ifRainDict[`ifRain${index}`] = ifRain;
+      });
       const inputValues: Record<string, string> = {
         ...locationDict,
         ...temperatureDict,
+        ...windDict,
+        ...ifRainDict,
         style: "casual",
+        mode: selectedMode, 
         sex: "female",
+        age: "20"
       };
       const template = templateBuilder(locations.length);
 
