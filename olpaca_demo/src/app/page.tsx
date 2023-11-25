@@ -15,6 +15,7 @@ export default function Home() {
   const [inputLat, setLat] = useState("");
   const [inputLong, setLong] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [selectedOrigin, setSelectedOrigin] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("");
   const [selectedDepartDateTime, setSelectedDepartDateTime] = useState("Now");
   const [selectedAvoidOptions, setSelectedAvoidOptions] = useState<string[]>(
@@ -31,17 +32,43 @@ export default function Home() {
   });
 
   const handleApplyFilters = (
+    origin: string,
     destination: string,
     departDateTime: string,
     avoidOptions: string[],
   ) => {
+    setSelectedOrigin(origin);
     setSelectedDestination(destination);
     setSelectedDepartDateTime(departDateTime);
     setSelectedAvoidOptions(avoidOptions);
     // update map data
-    // loader.load().then(async () => {
-    //   routeMap = calcRoute(destination, departDateTime, avoidOptions)
-    // });
+    loader.load().then(async () => {
+      const { Map } = (await google.maps.importLibrary(
+        "maps",
+      )) as google.maps.MapsLibrary;
+  
+      const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
+        "routes",
+      )) as google.maps.RoutesLibrary;
+
+      var directions = new DirectionsService();
+      var routeMap = new DirectionsRenderer();
+
+      map = new Map(document.getElementById("map") as HTMLElement);
+      routeMap.setMap(map)
+
+      var mapsRequest = {
+        origin: origin,
+        destination: destination,
+        travelMode: TravelMode.DRIVING
+      };
+    
+      await directions.route(mapsRequest, function(response, status) {
+        if (status == 'OK') {
+          routeMap.setDirections(response)
+        }
+      });
+    });
   };
 
   const handleTemperatureChange = (
@@ -113,18 +140,11 @@ export default function Home() {
       "maps",
     )) as google.maps.MapsLibrary;
 
-    const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
-      "routes",
-    )) as google.maps.RoutesLibrary;
-
-    var routeMap = new DirectionsRenderer();
-
     // Function for running the google maps api
     map = new Map(document.getElementById("map") as HTMLElement, {
       center: { lat: -37.804874, lng: 144.96259 },
       zoom: 14,
     });
-    routeMap.setMap(map)
 
     // var directions = new DirectionsService();
   
@@ -189,6 +209,7 @@ export default function Home() {
           ></div>
           <FilterMenu onApply={handleApplyFilters} />
           <p>Text output preview:</p>
+          <p>Selected Origin: {selectedOrigin}</p>
           <p>Selected Destination: {selectedDestination}</p>
           <p>Selected Departure: {selectedDepartDateTime}</p>
           <p>Selected Avoid Options: {selectedAvoidOptions.join(" ")}</p>
@@ -265,7 +286,7 @@ export default function Home() {
   );
 }
 
-async function calcRoute(destination: string, departDateTime: any, avoidOptions: any) {
+async function calcRoute(origin: string, destination: string, departDateTime: any, avoidOptions: any) {
   const { DirectionsService, TravelMode, DirectionsRenderer } = (await google.maps.importLibrary(
     "routes",
   )) as google.maps.RoutesLibrary;
@@ -274,10 +295,6 @@ async function calcRoute(destination: string, departDateTime: any, avoidOptions:
   var routeMap = new DirectionsRenderer();
 
   // Yuki's testing
-  const origin = "New York, NY";
-  const defaultDestionation = "Los Angeles, CA";
-  const mode = "driving";
-
   var mapsRequest = {
     origin: origin,
     destination: destination,
@@ -286,9 +303,9 @@ async function calcRoute(destination: string, departDateTime: any, avoidOptions:
 
   directions.route(mapsRequest, function(response, status) {
     if (status == 'OK') {
-      routeMap.setDirections(response);
+      return response
     }
   });
 
-  return routeMap;
+  return null
 }
